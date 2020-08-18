@@ -1,0 +1,21 @@
+<Project>
+  <PropertyGroup>
+    <BaseIntermediateOutputPath>..\build\obj\Samples</BaseIntermediateOutputPath>
+    <OutputPath>..\build\bin\Samples\$(Configuration)</OutputPath>
+  </PropertyGroup>
+
+  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.props" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>System.TinyCommandLine.Samples</RootNamespace>
+    <AssemblyName>Samples</AssemblyName>
+  </PropertyGroup>
+
+  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\src\TinyCommandLine\TinyCommandLine.csproj" />
+  </ItemGroup>
+</Project>

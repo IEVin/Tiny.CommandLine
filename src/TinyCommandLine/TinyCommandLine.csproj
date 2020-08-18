@@ -1,0 +1,26 @@
+<Project>
+  <PropertyGroup>
+    <BaseIntermediateOutputPath>..\..\build\obj\TinyCommandLine</BaseIntermediateOutputPath>
+    <OutputPath>..\..\build\bin\TinyCommandLine\$(Configuration)</OutputPath>
+  </PropertyGroup>
+
+  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.props" />
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>TinyCommandLine</AssemblyName>
+    <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
+    <LangVersion>latest</LangVersion>
+    <Version>0.0.1.0</Version>
+  </PropertyGroup>
+
+  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" />
+
+  <PropertyGroup>
+    <Features>pdb-path-determinism</Features>
+    <PathMap>$(ProjectDir)=src\</PathMap>
+    <RootNamespace>System.TinyCommandLine</RootNamespace>
+  </PropertyGroup>
+
+</Project>
