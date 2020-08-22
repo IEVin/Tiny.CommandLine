@@ -13,14 +13,28 @@ namespace System.TinyCommandLine
 {
     using Implementation;
 
-    public delegate void CommandConfigurator(CommandBuilder builder);
-
-    public delegate void CommandConfigurator<in T>(T options, CommandBuilder builder);
-
-    public delegate void OptionConfigurator<T>(OptionBuilder<T> builder);
-
     public class CommandLineParser
     {
+        const string NoCommand = null;
+
+        public delegate void CommandConfigurator(CommandBuilder builder);
+
+        public delegate void CommandConfigurator<in T>(T options, CommandBuilder builder);
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public CommandLineParser Command(CommandConfigurator configure)
+            => Command(NoCommand, configure);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public CommandLineParser Command<T>(Func<T> ctor, CommandConfigurator<T> configure) where T : new()
+            => Command(b => configure(ctor(), b));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public CommandLineParser Command<T>(string name, Func<T> ctor, CommandConfigurator<T> configure)
+            => Command(name, b => configure(ctor(), b));
+
+
         public CommandLineParser Command(string name, CommandConfigurator configure) => throw new NotImplementedException(name);
         public CommandLineParser ErrorHandler(Func<string> handler) => throw new NotImplementedException();
         public void Run() => throw new NotImplementedException();
@@ -30,6 +44,47 @@ namespace System.TinyCommandLine
     {
         public ref struct CommandBuilder
         {
+            const char NoShortName = '\0';
+            const string NoLongName = null;
+
+            public delegate void OptionConfigurator<T>(OptionBuilder<T> builder);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public CommandBuilder CreateOptions<T>(T optionsDefaultObject, out T options)
+            {
+                options = optionsDefaultObject;
+                return this;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public CommandBuilder Option<T>(string longName, out T value, string helpText)
+                => Option(NoShortName, longName, out value, b => b.HelpText(helpText));
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public CommandBuilder Option<T>(string longName, out T value, OptionConfigurator<T> configure = null)
+                => Option(NoShortName, longName, out value, configure);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public CommandBuilder Option<T>(char shortName, out T value, string helpText)
+                => Option(shortName, NoLongName, out value, b => b.HelpText(helpText));
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public CommandBuilder Option<T>(char shortName, out T value, OptionConfigurator<T> configure)
+                => Option(shortName, NoLongName, out value, configure);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public CommandBuilder Option<T>(out T value, string helpText)
+                => Option(NoShortName, NoLongName, out value, b => b.HelpText(helpText));
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public CommandBuilder Option<T>(out T value, OptionConfigurator<T> configure = null)
+                => Option(NoShortName, NoLongName, out value, configure);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public CommandBuilder Option<T>(char shortName, string longName, out T value, string helpText)
+                => Option(shortName, longName, out value, b => b.HelpText(helpText));
+
+
             public CommandBuilder Option<T>(char shortName, string longName, out T value, OptionConfigurator<T> configure = null)
                 => throw new NotImplementedException();
 
@@ -49,78 +104,16 @@ namespace System.TinyCommandLine
         }
     }
 
-    public static class CommandLineParserExtensions
-    {
-        const string NoCommand = null;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static CommandLineParser Command(this CommandLineParser parser, CommandConfigurator configure)
-            => parser.Command(NoCommand, configure);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static CommandLineParser Command<T>(this CommandLineParser parser, Func<T> ctor, CommandConfigurator<T> configure) where T : new()
-            => parser.Command(b => configure(ctor(), b));
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static CommandLineParser Command<T>(this CommandLineParser parser, string name, Func<T> ctor, CommandConfigurator<T> configure)
-            => parser.Command(name, b => configure(ctor(), b));
-    }
-
-    public static class CommandBuilderExtensions
-    {
-        const char NoShortName = '\0';
-        const string NoLongName = null;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static CommandBuilder CreateOptions<T>(this CommandBuilder builder, T optionsDefaultObject, out T options)
-        {
-            options = optionsDefaultObject;
-            return builder;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Invoke<T>(this CommandBuilder builder, Action<T> handler, T options)
-            => builder.Invoke(() => handler(options));
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static CommandBuilder Option<T>(this CommandBuilder builder, string longName, out T value, string helpText)
-            => builder.Option(NoShortName, longName, out value, b => b.HelpText(helpText));
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static CommandBuilder Option<T>(this CommandBuilder builder, string longName, out T value, OptionConfigurator<T> configure = null)
-            => builder.Option(NoShortName, longName, out value, configure);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static CommandBuilder Option<T>(this CommandBuilder builder, char shortName, out T value, string helpText)
-            => builder.Option(shortName, NoLongName, out value, b => b.HelpText(helpText));
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static CommandBuilder Option<T>(this CommandBuilder builder, char shortName, out T value, OptionConfigurator<T> configure)
-            => builder.Option(shortName, NoLongName, out value, configure);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static CommandBuilder Option<T>(this CommandBuilder builder, out T value, string helpText)
-            => builder.Option(NoShortName, NoLongName, out value, b => b.HelpText(helpText));
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static CommandBuilder Option<T>(this CommandBuilder builder, out T value, OptionConfigurator<T> configure = null)
-            => builder.Option(NoShortName, NoLongName, out value, configure);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static CommandBuilder Option<T>(this CommandBuilder builder, char shortName, string longName, out T value, string helpText)
-            => builder.Option(shortName, longName, out value, b => b.HelpText(helpText));
-    }
-
-    namespace Extended
+    namespace Extensions
     {
         public static class CommandLineParserExtensions
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static CommandLineParser Command<T>(this CommandLineParser parser, CommandConfigurator<T> configure) where T : new()
+            public static CommandLineParser Command<T>(this CommandLineParser parser, CommandLineParser.CommandConfigurator<T> configure) where T : new()
                 => parser.Command(b => configure(new T(), b));
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static CommandLineParser Command<T>(this CommandLineParser parser, string name, CommandConfigurator<T> configure) where T : new()
+            public static CommandLineParser Command<T>(this CommandLineParser parser, string name, CommandLineParser.CommandConfigurator<T> configure) where T : new()
                 => parser.Command(name, b => configure(new T(), b));
         }
 
