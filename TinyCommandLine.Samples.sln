@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.30330.147
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Samples", "samples\Samples.csproj", "{94377A2F-5EC6-4599-95F0-96A54795BB54}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "src\Tests\Tests.csproj", "{31DB55FB-1612-4C71-A2F1-1ED5E9E49FF0}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyCommandLine", "src\TinyCommandLine\TinyCommandLine.csproj", "{5DBD8551-AF5B-468A-8A5E-AD9973DADBB5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CA90A3FC-AE68-45D3-8FCF-89EFF968EF18}"
@@ -26,6 +28,10 @@ Global
 		{94377A2F-5EC6-4599-95F0-96A54795BB54}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{94377A2F-5EC6-4599-95F0-96A54795BB54}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{94377A2F-5EC6-4599-95F0-96A54795BB54}.Release|Any CPU.Build.0 = Release|Any CPU
+		{31DB55FB-1612-4C71-A2F1-1ED5E9E49FF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31DB55FB-1612-4C71-A2F1-1ED5E9E49FF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31DB55FB-1612-4C71-A2F1-1ED5E9E49FF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31DB55FB-1612-4C71-A2F1-1ED5E9E49FF0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5DBD8551-AF5B-468A-8A5E-AD9973DADBB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5DBD8551-AF5B-468A-8A5E-AD9973DADBB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5DBD8551-AF5B-468A-8A5E-AD9973DADBB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
