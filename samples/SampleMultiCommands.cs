@@ -8,24 +8,22 @@ namespace System.TinyCommandLine.Samples
         //  calc.exe add 1 7
         //  calc.exe sub 5 3
         //  calc.exe eval "sqrt((2+2)*2)"
-        public static void EntryPoint(string[] args)
-        {
-            new CommandLineParser()
+        public static void EntryPoint(string[] args) =>
+            CommandLineParser.Run(args, syntax => syntax
                 .Command("add", builder => builder
                     .Option(out double num1, b => b.Required())
                     .Option(out double num2, b => b.Required())
-                    .Invoke(() => Sub(num1, num2))
+                    .Handler(() => Add(num1, num2))
                 )
-                .Command("add", builder => builder
+                .Command("sub", builder => builder
                     .Option(out double num1, b => b.Required())
                     .Option(out double num2, b => b.Required())
-                    .Invoke(() => Sum(num1, num2))
+                    .Handler(() => Sub(num1, num2))
                 )
                 .Command("eval", EvalCommand.Declare)
-                .Run();
-        }
+            );
 
-        private static void Sum(double a, double b) => Console.WriteLine(a + b);
+        private static void Add(double a, double b) => Console.WriteLine(a + b);
         private static void Sub(double a, double b) => Console.WriteLine(a - b);
     }
 
@@ -37,7 +35,7 @@ namespace System.TinyCommandLine.Samples
             builder
                 .HelpText("Evaluate complex expression")
                 .Option(out string expr, b => b.Required())
-                .Invoke(() => Handler(expr));
+                .Handler(() => Handler(expr));
         }
 
         private static void Handler(string expr)
