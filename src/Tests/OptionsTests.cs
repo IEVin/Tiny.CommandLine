@@ -31,6 +31,17 @@ namespace System.TinyCommandLine.Tests
         [TestCase("--value 0.8", ExpectedResult = 0.8)]
         public double Double_should_be_parsed_correctly(string cmd) => ParseOption<double>(cmd);
 
+        [TestCase("-v 1", ExpectedResult = '1')]
+        [TestCase("--value a", ExpectedResult = 'a')]
+        public char Char_should_be_parsed_correctly(string cmd) => ParseOption<char>(cmd);
+
+        [TestCase("--value 01.20.07")]
+        public void DateTime_should_be_parsed_correctly(string cmd)
+        {
+            var dt = ParseOption<DateTime>(cmd);
+            Assert.AreEqual(new DateTime(2007, 01, 20, 0, 0, 0, 0, DateTimeKind.Utc), dt);
+        }
+
         [TestCase("-v")]
         [TestCase("--value")]
         public void Flag_should_be_parsed_as_bool(string cmd) => Assert.IsTrue(ParseOption<bool>(cmd));
@@ -68,6 +79,34 @@ namespace System.TinyCommandLine.Tests
             Assert.AreEqual(list[0], "1");
             Assert.AreEqual(list[1], "test");
             Assert.AreEqual(list[2], "qq");
+        }
+
+        [TestCase("--str --flag", Ignore = "Not Implemented")]
+        public void Test(string cmd)
+        {
+            string str = null;
+            bool flag = false;
+
+            Run(cmd, s => s
+                .Option("flag", out flag)
+                .Option("str", out str)
+            );
+
+            Assert.AreEqual("--flag", str);
+            Assert.IsFalse(flag);
+        }
+
+        [TestCase("argument", Ignore = "Not Implemented")]
+        public void Argument_should_be_parsed_correctly(string cmd)
+        {
+            string result = null;
+
+            Run(cmd, s => s
+                .Argument(out string val)
+                .Handler(() => result = val)
+            );
+
+            Assert.AreEqual("argument", result);
         }
 
         static T ParseOption<T>(string cmd)

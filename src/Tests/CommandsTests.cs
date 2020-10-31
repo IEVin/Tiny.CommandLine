@@ -45,7 +45,7 @@ namespace System.TinyCommandLine.Tests
         }
 
         [TestCase("cmd sub")]
-        public void Specified_subCommand_should_be_invoked(string cmd)
+        public void Specified_SubCommand_should_be_invoked(string cmd)
         {
             bool invokedCmd = false;
             bool invokedSub = false;
@@ -100,6 +100,25 @@ namespace System.TinyCommandLine.Tests
             static string Sum(bool f1, bool f2 = false, bool f3 = false) => (f1 ? "v" : ".") + (f2 ? "v" : ".") + (f3 ? "v" : ".");
         }
 
+
+        [TestCase("--test cmd -f")]
+        public void Only_options_declared_for_current_command_should_be_parsed(string cmd)
+        {
+            bool innerFlag = false;
+            bool outerFlag = false;
+
+            Run(cmd, s => s
+                .Command("cmd", b => b
+                    .Option('f', out innerFlag)
+                    .Handler(() => { })
+                )
+                .Option('f', out outerFlag)
+                .Option("test", out bool _)
+            );
+
+            Assert.IsTrue(innerFlag);
+            Assert.IsFalse(outerFlag);
+        }
 
         static void Run(string cmd, Implementation.CommandConfigurator configure)
         {

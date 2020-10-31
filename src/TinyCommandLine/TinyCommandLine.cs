@@ -292,7 +292,7 @@ namespace System.TinyCommandLine
 
                 if (typeof(T) == typeof(DateTime))
                 {
-                    return DateTime.TryParse(str, out var result)
+                    return DateTime.TryParse(str, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out var result)
                         ? Cast(result)
                         : throw ExceptionHelper.InvalidOptionType(optionName, nameof(DateTime));
                 }
@@ -388,16 +388,16 @@ namespace System.TinyCommandLine
                 var result = new List<T>();
 
                 int endIndex = startIndex + count;
-                for (var propIndex = startIndex; propIndex < endIndex;)
+                for (var i = startIndex; i < endIndex;)
                 {
-                    var optionIndex = FindOptionIndex(shortName, longName, propIndex);
+                    var optionIndex = FindOptionIndex(shortName, longName, i, endIndex);
                     if (optionIndex < 0)
                         break;
 
                     var info = _options[optionIndex];
 
                     var index = info.ValueIndex == 0 ? info.Index + 1 : info.Index;
-                    propIndex = index + 1;
+                    i = index + 1;
 
                     if (typeof(T) == typeof(bool) && info.ValueIndex == 0)
                     {
@@ -415,40 +415,46 @@ namespace System.TinyCommandLine
                 return result;
             }
 
-            int FindOptionIndex(char shortName, string longName, int index)
+            int FindOptionIndex(char shortName, string longName, int startIndex, int endIndex)
             {
                 var tokenInd = int.MaxValue;
                 var optionInd = -1;
 
                 // TODO: Change it to binary search
-                for (var i = 0; i < _options.Count; i++)
+                if (shortName != '\0')
                 {
-                    var q = _options[i];
-                    if (!q.IsLong && q.Index >= index && _tokens[q.Index][1] == shortName)
+                    for (var i = 0; i < _options.Count; i++)
                     {
-                        if (q.Index < tokenInd)
+                        var q = _options[i];
+                        if (!q.IsLong && startIndex <= q.Index && q.Index < endIndex && _tokens[q.Index][1] == shortName)
                         {
-                            tokenInd = q.Index;
-                            optionInd = i;
+                            if (q.Index < tokenInd)
+                            {
+                                tokenInd = q.Index;
+                                optionInd = i;
+                            }
                         }
                     }
                 }
 
-                for (var i = 0; i < _options.Count; i++)
+                if (longName != null)
                 {
-                    var q = _options[i];
-
-                    var len = q.ValueIndex == 0
-                        ? _tokens[q.Index].Length - 2
-                        : q.ValueIndex - 3;
-
-                    if (q.IsLong && q.Index >= index && len == longName.Length &&
-                        string.Compare(_tokens[q.Index], 2, longName, 0, longName.Length) == 0)
+                    for (var i = 0; i < _options.Count; i++)
                     {
-                        if (q.Index < tokenInd)
+                        var q = _options[i];
+
+                        var len = q.ValueIndex == 0
+                            ? _tokens[q.Index].Length - 2
+                            : q.ValueIndex - 3;
+
+                        if (q.IsLong && startIndex <= q.Index && q.Index < endIndex && len == longName.Length &&
+                            string.Compare(_tokens[q.Index], 2, longName, 0, longName.Length) == 0)
                         {
-                            tokenInd = q.Index;
-                            optionInd = i;
+                            if (q.Index < tokenInd)
+                            {
+                                tokenInd = q.Index;
+                                optionInd = i;
+                            }
                         }
                     }
                 }
