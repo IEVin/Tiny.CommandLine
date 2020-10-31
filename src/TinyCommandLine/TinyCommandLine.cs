@@ -134,8 +134,22 @@ namespace System.TinyCommandLine
             public CommandBuilder Option<T>(char shortName, string longName, out T value, OptionConfigurator<T> configure = null)
                 => OptionsInternal<T, T>(shortName, longName, out value, configure, x => x[x.Count - 1]);
 
+            public CommandBuilder Argument<T>(out T value, OptionConfigurator<T> configure = null)
+                => ArgumentInternal<T, T>(out value, configure, x => x[x.Count - 1]);
+
             public CommandBuilder OptionList<T>(char shortName, string longName, out IReadOnlyList<T> value, OptionConfigurator<IReadOnlyList<T>> configure = null)
                 => OptionsInternal<IReadOnlyList<T>, T>(shortName, longName, out value, configure, x => x);
+
+            public CommandBuilder ArgumentList<T>(out IReadOnlyList<T> value, OptionConfigurator<IReadOnlyList<T>> configure = null)
+                => ArgumentInternal<IReadOnlyList<T>, T>(out value, configure, x => x);
+
+
+            CommandBuilder ArgumentInternal<T, TItem>(out T value, OptionConfigurator<T> configure, Func<List<TItem>, T> func)
+            {
+                // TODO: Add stage check
+
+                return OptionsInternal('\0', null, out value, configure, func);
+            }
 
 
             CommandBuilder OptionsInternal<T, TItem>(char shortName, string longName, out T value, OptionConfigurator<T> configure, Func<List<TItem>, T> func)
@@ -310,6 +324,8 @@ namespace System.TinyCommandLine
 
             public void AddOption<T>(char shortName, string longName, OptionConfigurator<T> configure) => throw new NotImplementedException();
 
+            public void AddArgument<T>(OptionConfigurator<T> configure) => throw new NotImplementedException();
+
             public void AddDesc(string text) => throw new NotImplementedException();
 
             public void Show() => throw new NotImplementedException();
@@ -317,6 +333,7 @@ namespace System.TinyCommandLine
 
         static class ExceptionHelper
         {
+            public static Exception ArgumentNotSpecified() => new InvalidSyntaxException("Argument not specified.");
             public static Exception OptionNotSpecified(string name) => new InvalidSyntaxException($"Option --{name} not specified.");
             public static Exception InvalidOptionType(string name, string type) => new InvalidSyntaxException($"Option --{name} must be a {type}.");
         }
@@ -470,11 +487,11 @@ namespace System.TinyCommandLine
         public static CommandBuilder Option<T>(this CommandBuilder builder, string longName, out T value, string helpText)
             => builder.Option(NoShortName, longName, out value, SetHelpText<T>(helpText));
         
-        public static CommandBuilder Option<T>(this CommandBuilder builder, out T value, OptionConfigurator<T> configure = null)
-            => builder.Option(NoShortName, NoLongName, out value, configure);
+        public static CommandBuilder Argument<T>(this CommandBuilder builder, out T value, OptionConfigurator<T> configure = null)
+            => builder.Argument(out value, configure);
 
-        public static CommandBuilder Option<T>(this CommandBuilder builder, out T value, string helpText)
-            => builder.Option(NoShortName, NoLongName, out value, SetHelpText<T>(helpText));
+        public static CommandBuilder Argument<T>(this CommandBuilder builder, out T value, string helpText)
+            => builder.Argument(out value, SetHelpText<T>(helpText));
 
         #endregion
 
@@ -495,11 +512,11 @@ namespace System.TinyCommandLine
         public static CommandBuilder OptionList<T>(this CommandBuilder builder, string longName, out IReadOnlyList<T> value, string helpText)
             => builder.OptionList(NoShortName, longName, out value, SetHelpText<IReadOnlyList<T>>(helpText));
 
-        public static CommandBuilder OptionList<T>(this CommandBuilder builder, out IReadOnlyList<T> value, OptionConfigurator<IReadOnlyList<T>> configure = null)
-            => builder.OptionList(NoShortName, NoLongName, out value, configure);
+        public static CommandBuilder ArgumentList<T>(this CommandBuilder builder, out IReadOnlyList<T> value, OptionConfigurator<IReadOnlyList<T>> configure = null)
+            => builder.ArgumentList(out value, configure);
 
-        public static CommandBuilder OptionList<T>(this CommandBuilder builder, out IReadOnlyList<T> value, string helpText)
-            => builder.OptionList(NoShortName, NoLongName, out value, SetHelpText<IReadOnlyList<T>>(helpText));
+        public static CommandBuilder ArgumentList<T>(this CommandBuilder builder, out IReadOnlyList<T> value, string helpText)
+            => builder.ArgumentList(out value, SetHelpText<IReadOnlyList<T>>(helpText));
 
         #endregion
 

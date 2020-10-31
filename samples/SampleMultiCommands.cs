@@ -11,13 +11,13 @@ namespace System.TinyCommandLine.Samples
         public static void EntryPoint(string[] args) =>
             CommandLineParser.Run(args, syntax => syntax
                 .Command("add", builder => builder
-                    .Option(out double num1, b => b.Required())
-                    .Option(out double num2, b => b.Required())
+                    .Argument(out double num1, b => b.Required())
+                    .Argument(out double num2, b => b.Required())
                     .Handler(() => Add(num1, num2))
                 )
                 .Command("sub", builder => builder
-                    .Option(out double num1, b => b.Required())
-                    .Option(out double num2, b => b.Required())
+                    .Argument(out double num1, b => b.Required())
+                    .Argument(out double num2, b => b.Required())
                     .Handler(() => Sub(num1, num2))
                 )
                 .Command("eval", EvalCommand.Declare)
@@ -34,7 +34,7 @@ namespace System.TinyCommandLine.Samples
         {
             builder
                 .HelpText("Evaluate complex expression")
-                .Option(out string expr, b => b.Required())
+                .Argument(out string expr, b => b.Required())
                 .Handler(() => Handler(expr));
         }
 
