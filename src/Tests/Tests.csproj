@@ -8,10 +8,9 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5</TargetFramework>
     <AssemblyName>TinyCommandLine.Tests</AssemblyName>
     <RootNamespace>System.TinyCommandLine.Tests</RootNamespace>
-    <StartupObject>System.TinyCommandLine.Tests.Program</StartupObject>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
@@ -19,7 +18,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
     <PackageReference Include="NUnit" Version="3.12.0" />
-    <PackageReference Include="NUnitLite" Version="3.12.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.17.0" />
   </ItemGroup>
 
   <ItemGroup>
