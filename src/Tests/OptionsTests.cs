@@ -81,6 +81,20 @@ namespace System.TinyCommandLine.Tests
             Assert.AreEqual(list[2], "qq");
         }
 
+        [TestCase("--path \"C:\\\" -f", ExpectedResult = "\"C:\\\"", Ignore = "Not Implemented")]
+        public string String_with_backslash_should_be_parsed_correctly(string cmd)
+        {
+            string result = null;
+            bool force = false;
+            Run(cmd, s => s
+                .Option("path", out result)
+                .Option('f', out force)
+            );
+
+            Assert.IsTrue(force);
+            return result;
+        }
+
         [TestCase("--str --flag", Ignore = "Not Implemented")]
         public void Test(string cmd)
         {
