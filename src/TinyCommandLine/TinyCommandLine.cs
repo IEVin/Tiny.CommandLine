@@ -15,6 +15,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
@@ -69,6 +70,8 @@ namespace System.TinyCommandLine
                     configure = state.Command;
                     state.Command = null;
                     state.StartIndex += state.Count + 1;
+
+                    tokens.MarkAsUsed(state.StartIndex - 1);
                 } 
             }
             catch (InvalidSyntaxException ex)
@@ -130,7 +133,6 @@ namespace System.TinyCommandLine
                 return this;
             }
 
-
             public CommandBuilder Option<T>(char shortName, string longName, out T value, OptionConfigurator<T> configure = null)
                 => OptionsInternal<T, T>(shortName, longName, out value, configure, x => x[x.Count - 1]);
 
@@ -143,11 +145,9 @@ namespace System.TinyCommandLine
             public CommandBuilder ArgumentList<T>(out IReadOnlyList<T> value, OptionConfigurator<IReadOnlyList<T>> configure = null)
                 => ArgumentInternal<IReadOnlyList<T>, T>(out value, configure, x => x);
 
-
             CommandBuilder ArgumentInternal<T, TItem>(out T value, OptionConfigurator<T> configure, Func<List<TItem>, T> func)
             {
                 // TODO: Add stage check
-
                 return OptionsInternal('\0', null, out value, configure, func);
             }
 
@@ -349,10 +349,16 @@ namespace System.TinyCommandLine
 
             readonly List<string> _tokens;
             readonly List<OptionInfo> _options;
+            readonly BitArray _used;
 
             public int Count => _tokens.Count;
 
-            TokenCollection(List<string> tokens, List<OptionInfo> options) => (_tokens, _options) = (tokens, options);
+            TokenCollection(List<string> tokens, List<OptionInfo> options)
+            {
+                _tokens = tokens;
+                _options = options;
+                _used = new BitArray(tokens.Count);
+            }
 
             public static TokenCollection Tokenize(string[] args)
             {
@@ -383,6 +389,8 @@ namespace System.TinyCommandLine
             
             public int GetIndex(string name, int index, int count) => _tokens.IndexOf(name, index, count);
 
+            public string GetToken(int index) => _tokens[index];
+
             public List<T> GetValues<T>(char shortName, string longName, int startIndex, int count)
             {
                 var result = new List<T>();
@@ -399,6 +407,8 @@ namespace System.TinyCommandLine
                     var index = info.ValueIndex == 0 ? info.Index + 1 : info.Index;
                     i = index + 1;
 
+                    _used[info.Index] = true;
+
                     if (typeof(T) == typeof(bool) && info.ValueIndex == 0)
                     {
                         result.Add(Converter<T>.Cast(true));
@@ -408,6 +418,7 @@ namespace System.TinyCommandLine
                     if (index >= _tokens.Count)
                         throw new InvalidSyntaxException($"The option --{longName} must have a value");
 
+                    _used[index] = true;
                     var rawValue = _tokens[index].Substring(info.ValueIndex);
                     result.Add(Converter<T>.Parse(rawValue, longName));
                 }
@@ -461,6 +472,20 @@ namespace System.TinyCommandLine
 
                 return optionInd;
             }
+
+            public void MarkAsUsed(int index) => _used[index] = true;
+
+            public int FindFirstFreeIndex(int startIndex, int count)
+            {
+                int endIndex = startIndex + count;
+                for (int i = startIndex; i < endIndex; i++)
+                {
+                    if (!_used[i])
+                        return i;
+                }
+
+                return -1;
+            }
         }
     }
 
@@ -492,9 +517,7 @@ namespace System.TinyCommandLine
 
         public static CommandBuilder Option<T>(this CommandBuilder builder, string longName, out T value, string helpText)
             => builder.Option(NoShortName, longName, out value, SetHelpText<T>(helpText));
-        
-        public static CommandBuilder Argument<T>(this CommandBuilder builder, out T value, OptionConfigurator<T> configure = null)
-            => builder.Argument(out value, configure);
+
 
         public static CommandBuilder Argument<T>(this CommandBuilder builder, out T value, string helpText)
             => builder.Argument(out value, SetHelpText<T>(helpText));
