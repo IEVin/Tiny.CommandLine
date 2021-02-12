@@ -2,8 +2,8 @@ namespace System.TinyCommandLine.Implementation
 {
     static class ExceptionHelper
     {
-        public static Exception ArgumentNotSpecified() => new InvalidSyntaxException("Argument not specified.");
-        public static Exception OptionNotSpecified(string name) => new InvalidSyntaxException($"Option --{name} not specified.");
+        public static Exception ArgumentNotSpecified(string name) => new InvalidSyntaxException($"Argument {name} not specified.");
+        public static Exception OptionNotSpecified(string name) => new InvalidSyntaxException($"Option {name} not specified.");
         public static Exception InvalidOptionType(string name, string type) => new InvalidSyntaxException($"Option --{name} must be a {type}.");
     }
 

@@ -67,8 +67,9 @@ namespace System.TinyCommandLine.Implementation
             var optionState = new OptionState<T>();
             configure?.Invoke(new OptionBuilder<T>(optionState));
 
+            // TODO: Add argument name
             if (optionState.IsRequired)
-                throw ExceptionHelper.ArgumentNotSpecified();
+                ExceptionHelper.ArgumentNotSpecified(null);
 
             value = optionState.DefaultValue;
             return this;
@@ -140,7 +141,13 @@ namespace System.TinyCommandLine.Implementation
             configure?.Invoke(new OptionBuilder<T>(optionState));
 
             if (optionState.IsRequired)
-                throw ExceptionHelper.OptionNotSpecified(longName);
+            {
+                var name = longName == null
+                    ? "-" + shortName
+                    : "--" + longName;
+
+                ExceptionHelper.OptionNotSpecified(name);
+            }
 
             value = optionState.DefaultValue;
             return this;
