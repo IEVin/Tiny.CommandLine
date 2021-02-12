@@ -52,9 +52,21 @@ namespace System.TinyCommandLine.Implementation
             return new TokenCollection(tokens, options);
         }
 
-        public int GetIndex(string name, int index, int count) => _tokens.IndexOf(name, index, count);
 
-        public string GetToken(int index) => _tokens[index];
+
+        public string this[int index] => _tokens[index];
+
+        public int GetNextIndex(int index, int count)
+        {
+            int endIndex = index + count;
+            for (int i = index; i < endIndex; i++)
+            {
+                if (!_used[i])
+                    return i;
+            }
+
+            return -1;
+        }
 
         public List<T> GetValues<T>(char shortName, string longName, int startIndex, int count)
         {
@@ -139,17 +151,5 @@ namespace System.TinyCommandLine.Implementation
         }
 
         public void MarkAsUsed(int index) => _used[index] = true;
-
-        public int FindFirstFreeIndex(int startIndex, int count)
-        {
-            int endIndex = startIndex + count;
-            for (int i = startIndex; i < endIndex; i++)
-            {
-                if (!_used[i])
-                    return i;
-            }
-
-            return -1;
-        }
     }
 }

@@ -39,9 +39,11 @@ namespace System.TinyCommandLine.Implementation
                 return this;
             }
 
-            var index = _tokens.GetIndex(name, _state.StartIndex, _state.Count);
-            if (index >= 0)
+            var index = _tokens.GetNextIndex(_state.StartIndex, _state.Count);
+            if (index >= 0 && _tokens[index] == name)
             {
+                _tokens.MarkAsUsed(index);
+
                 _state.Count = index - _state.StartIndex;
                 _state.Command = configure;
             }
