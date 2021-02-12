@@ -52,23 +52,73 @@ namespace System.TinyCommandLine.Implementation
             return this;
         }
 
+        public CommandBuilder Argument<T>(out T value, OptionConfigurator<T> configure = null)
+        {
+            if (_helpGen != null)
+            {
+                _helpGen.AddArgument(configure);
+                value = default;
+                return this;
+            }
+
+            if (ArgumentInternal(out value))
+                return this;
+
+            var optionState = new OptionState<T>();
+            configure?.Invoke(new OptionBuilder<T>(optionState));
+
+            if (optionState.IsRequired)
+                throw ExceptionHelper.ArgumentNotSpecified();
+
+            value = optionState.DefaultValue;
+            return this;
+        }
+
+        public CommandBuilder ArgumentList<T>(out IReadOnlyList<T> value, OptionConfigurator<IReadOnlyList<T>> configure = null)
+        {
+            if (_helpGen != null)
+            {
+                _helpGen.AddArgument(configure);
+                value = default;
+                return this;
+            }
+
+            // TODO: Add more accurate capacity prediction from unused items in tokens
+            var list = new List<T>(_state.Count);
+            while (true)
+            {
+                if (!ArgumentInternal(out T item))
+                    break;
+
+                list.Add(item);
+            }
+
+            value = list;
+            return this;
+        }
+
+        bool ArgumentInternal<T>(out T value)
+        {
+            int index = _tokens.GetNextIndex(_state.StartIndex, _state.Count);
+            if (index < 0)
+            {
+                value = default;
+                return false;
+            }
+
+            _tokens.MarkAsUsed(index);
+
+            var valStr = _tokens[index];
+            value = Converter<T>.Parse(valStr, string.Empty);
+            return true;
+        }
+
+
         public CommandBuilder Option<T>(char shortName, string longName, out T value, OptionConfigurator<T> configure = null)
             => OptionsInternal<T, T>(shortName, longName, out value, configure, x => x[x.Count - 1]);
 
-        public CommandBuilder Argument<T>(out T value, OptionConfigurator<T> configure = null)
-            => ArgumentInternal<T, T>(out value, configure, x => x[x.Count - 1]);
-
         public CommandBuilder OptionList<T>(char shortName, string longName, out IReadOnlyList<T> value, OptionConfigurator<IReadOnlyList<T>> configure = null)
             => OptionsInternal<IReadOnlyList<T>, T>(shortName, longName, out value, configure, x => x);
-
-        public CommandBuilder ArgumentList<T>(out IReadOnlyList<T> value, OptionConfigurator<IReadOnlyList<T>> configure = null)
-            => ArgumentInternal<IReadOnlyList<T>, T>(out value, configure, x => x);
-
-        CommandBuilder ArgumentInternal<T, TItem>(out T value, OptionConfigurator<T> configure, Func<List<TItem>, T> func)
-        {
-            // TODO: Add stage check
-            return OptionsInternal('\0', null, out value, configure, func);
-        }
 
         CommandBuilder OptionsInternal<T, TItem>(char shortName, string longName, out T value, OptionConfigurator<T> configure, Func<List<TItem>, T> func)
         {
