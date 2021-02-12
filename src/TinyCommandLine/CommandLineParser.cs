@@ -80,7 +80,7 @@ namespace System.TinyCommandLine
             handler?.Invoke();
         }
 
-        public static void ShowError(string text)
+        static void ShowError(string text)
         {
             Console.WriteLine(text);
             //throw new NotImplementedException();

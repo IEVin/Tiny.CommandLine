@@ -15,6 +15,9 @@ namespace System.TinyCommandLine
             return builder;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static OptionConfigurator<T> SetHelpText<T>(string text) => x => x.HelpText(text);
+
         #region Option(out T value)
 
         public static CommandBuilder Option<T>(this CommandBuilder builder, char shortName, string longName, out T value, string helpText)
@@ -62,8 +65,5 @@ namespace System.TinyCommandLine
             => builder.ArgumentList(out value, SetHelpText<IReadOnlyList<T>>(helpText));
 
         #endregion
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static OptionConfigurator<T> SetHelpText<T>(string text) => x => x.HelpText(text);
     }
 }

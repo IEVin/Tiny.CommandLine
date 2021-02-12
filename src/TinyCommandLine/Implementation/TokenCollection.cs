@@ -5,7 +5,7 @@ namespace System.TinyCommandLine.Implementation
 {
     class TokenCollection
     {
-        public struct OptionInfo
+        struct OptionInfo
         {
             public int Index;
             public int ValueIndex;
@@ -15,8 +15,6 @@ namespace System.TinyCommandLine.Implementation
         readonly List<string> _tokens;
         readonly List<OptionInfo> _options;
         readonly BitArray _used;
-
-        public int Count => _tokens.Count;
 
         TokenCollection(List<string> tokens, List<OptionInfo> options)
         {
@@ -53,8 +51,11 @@ namespace System.TinyCommandLine.Implementation
         }
 
 
+        public int Count => _tokens.Count;
 
         public string this[int index] => _tokens[index];
+
+        public void MarkAsUsed(int index) => _used[index] = true;
 
         public int GetNextIndex(int index, int count)
         {
@@ -150,6 +151,5 @@ namespace System.TinyCommandLine.Implementation
             return optionInd;
         }
 
-        public void MarkAsUsed(int index) => _used[index] = true;
     }
 }
