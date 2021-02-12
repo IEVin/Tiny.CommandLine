@@ -81,7 +81,7 @@ namespace System.TinyCommandLine.Tests
             Assert.AreEqual(list[2], "qq");
         }
 
-        [TestCase("--path \"C:\\\" -f", ExpectedResult = "\"C:\\\"", Ignore = "Not Implemented")]
+        [TestCase("--path \"C:\\\" -f", ExpectedResult = "\"C:\\\"", Ignore = "Issue with .net command line parser")]
         public string String_with_backslash_should_be_parsed_correctly(string cmd)
         {
             string result = null;
@@ -95,7 +95,7 @@ namespace System.TinyCommandLine.Tests
             return result;
         }
 
-        [TestCase("--str --flag", Ignore = "Not Implemented")]
+        [TestCase("--str --flag", Ignore = "Issue with .net command line parser")]
         public void Test(string cmd)
         {
             string str = null;
