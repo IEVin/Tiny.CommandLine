@@ -15,6 +15,7 @@ namespace System.TinyCommandLine.Implementation
         readonly List<string> _tokens;
         readonly List<OptionInfo> _options;
         readonly BitArray _used;
+        int _lastUnusedIndex;
 
         TokenCollection(List<string> tokens, List<OptionInfo> options)
         {
@@ -60,10 +61,15 @@ namespace System.TinyCommandLine.Implementation
         public int GetNextIndex(int index, int count)
         {
             int endIndex = index + count;
-            for (int i = index; i < endIndex; i++)
+            for (int i = Math.Max(_lastUnusedIndex, index); i < endIndex; i++)
             {
-                if (!_used[i])
-                    return i;
+                if (_used[i])
+                    continue;
+
+                if (index <= _lastUnusedIndex)
+                    _lastUnusedIndex = i;
+
+                return i;
             }
 
             return -1;
