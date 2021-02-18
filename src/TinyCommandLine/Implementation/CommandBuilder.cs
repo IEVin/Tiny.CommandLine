@@ -8,7 +8,7 @@ namespace System.TinyCommandLine.Implementation
 
     class State
     {
-        public CommandConfigurator Command;
+        public CommandConfigurator SubCommand;
         public Action Handler;
         public int StartIndex;
         public int Count;
@@ -40,15 +40,15 @@ namespace System.TinyCommandLine.Implementation
             }
 
             var index = _tokens.GetNextIndex(_state.StartIndex, _state.Count);
-            if (index >= 0 && _tokens[index] == name)
-            {
-                _tokens.MarkAsUsed(index);
+            if (index < 0 || _tokens[index] != name)
+                return this;
 
-                _state.Count = index - _state.StartIndex;
-                _state.Command = configure;
-            }
+            _tokens.MarkAsUsed(index);
 
-            // TODO: Add check for duplicate commands
+            _state.SubCommand = configure;
+            _state.StartIndex = index + 1;
+            _state.Count = 0;
+
             return this;
         }
 
@@ -86,11 +86,8 @@ namespace System.TinyCommandLine.Implementation
 
             // TODO: Add more accurate capacity prediction from unused items in tokens
             var list = new List<T>(_state.Count);
-            while (true)
+            while (ArgumentInternal(out T item))
             {
-                if (!ArgumentInternal(out T item))
-                    break;
-
                 list.Add(item);
             }
 
@@ -175,10 +172,10 @@ namespace System.TinyCommandLine.Implementation
             if (_helpGen != null)
                 return;
 
-            if (_state.Command == null)
-            {
-                _state.Handler = handler;
-            }
+            if (_state.SubCommand != null)
+                return;
+
+            _state.Handler = handler;
         }
     }
 }

@@ -55,17 +55,14 @@ namespace System.TinyCommandLine
                         break;
                     }
 
-                    if (state.Command == null)
+                    if (state.SubCommand == null)
                     {
                         handler = state.Handler;
                         break;
                     }
 
-                    configure = state.Command;
-                    state.Command = null;
-                    state.StartIndex += state.Count + 1;
-
-                    tokens.MarkAsUsed(state.StartIndex - 1);
+                    configure = state.SubCommand;
+                    state.SubCommand = null;
                 }
             }
             catch (InvalidSyntaxException ex)
