@@ -15,7 +15,7 @@ namespace System.TinyCommandLine.Implementation
         readonly List<string> _tokens;
         readonly List<OptionInfo> _options;
         readonly BitArray _used;
-        int _lastUnusedIndex;
+        int _nextItemIndex;
 
         TokenCollection(List<string> tokens, List<OptionInfo> options)
         {
@@ -46,43 +46,37 @@ namespace System.TinyCommandLine.Implementation
                 tokens.Add(q);
             }
 
-            options.Sort((a, b) => Comparer<string>.Default.Compare(tokens[a.Index], tokens[b.Index]));
+            options.Sort((a, b) => string.CompareOrdinal(tokens[a.Index], tokens[b.Index]));
 
             return new TokenCollection(tokens, options);
         }
 
-
-        public int Count => _tokens.Count;
+        public int RemainingItemsCount => _tokens.Count - _nextItemIndex; // TODO: Add more accurate prediction
 
         public string this[int index] => _tokens[index];
 
         public void MarkAsUsed(int index) => _used[index] = true;
 
-        public int GetNextIndex(int index, int count)
+        public int GetNextIndex()
         {
-            int endIndex = index + count;
-            for (int i = Math.Max(_lastUnusedIndex, index); i < endIndex; i++)
+            for (; _nextItemIndex < _used.Count; _nextItemIndex++)
             {
-                if (_used[i])
+                if (_used[_nextItemIndex])
                     continue;
 
-                if (index <= _lastUnusedIndex)
-                    _lastUnusedIndex = i;
-
-                return i;
+                return _nextItemIndex;
             }
 
             return -1;
         }
 
-        public List<T> GetValues<T>(char shortName, string longName, int startIndex, int count)
+        public List<T> GetValues<T>(char shortName, string longName)
         {
             var result = new List<T>();
 
-            int endIndex = startIndex + count;
-            for (var i = startIndex; i < endIndex;)
+            for (var i = _nextItemIndex; i < _used.Count;)
             {
-                var optionIndex = FindOptionIndex(shortName, longName, i, endIndex);
+                var optionIndex = FindOptionIndex(shortName, longName, i);
                 if (optionIndex < 0)
                     break;
 
@@ -91,7 +85,7 @@ namespace System.TinyCommandLine.Implementation
                 var index = info.ValueIndex == 0 ? info.Index + 1 : info.Index;
                 i = index + 1;
 
-                _used[info.Index] = true;
+                MarkAsUsed(info.Index);
 
                 if (typeof(T) == typeof(bool) && info.ValueIndex == 0)
                 {
@@ -102,7 +96,7 @@ namespace System.TinyCommandLine.Implementation
                 if (index >= _tokens.Count)
                     throw new InvalidSyntaxException($"The option --{longName} must have a value");
 
-                _used[index] = true;
+                MarkAsUsed(index);
                 var rawValue = _tokens[index].Substring(info.ValueIndex);
                 result.Add(Converter<T>.Parse(rawValue, longName));
             }
@@ -110,7 +104,7 @@ namespace System.TinyCommandLine.Implementation
             return result;
         }
 
-        int FindOptionIndex(char shortName, string longName, int startIndex, int endIndex)
+        int FindOptionIndex(char shortName, string longName, int startIndex)
         {
             var tokenInd = int.MaxValue;
             var optionInd = -1;
@@ -121,7 +115,7 @@ namespace System.TinyCommandLine.Implementation
                 for (var i = 0; i < _options.Count; i++)
                 {
                     var q = _options[i];
-                    if (!q.IsLong && startIndex <= q.Index && q.Index < endIndex && _tokens[q.Index][1] == shortName)
+                    if (!q.IsLong && startIndex <= q.Index && _tokens[q.Index][1] == shortName)
                     {
                         if (q.Index < tokenInd)
                         {
@@ -142,8 +136,8 @@ namespace System.TinyCommandLine.Implementation
                         ? _tokens[q.Index].Length - 2
                         : q.ValueIndex - 3;
 
-                    if (q.IsLong && startIndex <= q.Index && q.Index < endIndex && len == longName.Length &&
-                        string.Compare(_tokens[q.Index], 2, longName, 0, longName.Length) == 0)
+                    if (q.IsLong && startIndex <= q.Index && len == longName.Length &&
+                        string.CompareOrdinal(_tokens[q.Index], 2, longName, 0, longName.Length) == 0)
                     {
                         if (q.Index < tokenInd)
                         {

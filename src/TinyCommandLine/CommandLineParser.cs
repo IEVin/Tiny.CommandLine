@@ -42,8 +42,6 @@ namespace System.TinyCommandLine
 
                 while (true)
                 {
-                    state.Count = tokens.Count - state.StartIndex;
-
                     configure(new CommandBuilder(tokens, state));
 
                     if (state.IsHelpRequired)

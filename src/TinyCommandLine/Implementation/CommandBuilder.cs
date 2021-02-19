@@ -10,8 +10,6 @@ namespace System.TinyCommandLine.Implementation
     {
         public CommandConfigurator SubCommand;
         public Action Handler;
-        public int StartIndex;
-        public int Count;
         public bool IsHelpRequired;
     }
 
@@ -33,27 +31,33 @@ namespace System.TinyCommandLine.Implementation
 
         public CommandBuilder Command(string name, CommandConfigurator configure)
         {
+            if (_state.SubCommand != null)
+                return this;
+
             if (_helpGen != null)
             {
                 _helpGen.AddCommand(name, configure);
                 return this;
             }
 
-            var index = _tokens.GetNextIndex(_state.StartIndex, _state.Count);
-            if (index < 0 || _tokens[index] != name)
-                return this;
-
-            _tokens.MarkAsUsed(index);
-
-            _state.SubCommand = configure;
-            _state.StartIndex = index + 1;
-            _state.Count = 0;
+            var index = _tokens.GetNextIndex();
+            if (index >= 0 && _tokens[index] == name)
+            {
+                _tokens.MarkAsUsed(index);
+                _state.SubCommand = configure;
+            }
 
             return this;
         }
 
         public CommandBuilder Argument<T>(out T value, OptionConfigurator<T> configure = null)
         {
+            if (_state.SubCommand != null)
+            {
+                value = default;
+                return this;
+            }
+
             if (_helpGen != null)
             {
                 _helpGen.AddArgument(configure);
@@ -77,6 +81,12 @@ namespace System.TinyCommandLine.Implementation
 
         public CommandBuilder ArgumentList<T>(out IReadOnlyList<T> value, OptionConfigurator<IReadOnlyList<T>> configure = null)
         {
+            if (_state.SubCommand != null)
+            {
+                value = default;
+                return this;
+            }
+
             if (_helpGen != null)
             {
                 _helpGen.AddArgument(configure);
@@ -84,8 +94,7 @@ namespace System.TinyCommandLine.Implementation
                 return this;
             }
 
-            // TODO: Add more accurate capacity prediction from unused items in tokens
-            var list = new List<T>(_state.Count);
+            var list = new List<T>(_tokens.RemainingItemsCount);
             while (ArgumentInternal(out T item))
             {
                 list.Add(item);
@@ -97,7 +106,7 @@ namespace System.TinyCommandLine.Implementation
 
         bool ArgumentInternal<T>(out T value)
         {
-            int index = _tokens.GetNextIndex(_state.StartIndex, _state.Count);
+            int index = _tokens.GetNextIndex();
             if (index < 0)
             {
                 value = default;
@@ -120,6 +129,12 @@ namespace System.TinyCommandLine.Implementation
 
         CommandBuilder OptionsInternal<T, TItem>(char shortName, string longName, out T value, OptionConfigurator<T> configure, Func<List<TItem>, T> func)
         {
+            if (_state.SubCommand != null)
+            {
+                value = default;
+                return this;
+            }
+
             if (_helpGen != null)
             {
                 _helpGen.AddOption(shortName, longName, configure);
@@ -127,7 +142,7 @@ namespace System.TinyCommandLine.Implementation
                 return this;
             }
 
-            var result = _tokens.GetValues<TItem>(shortName, longName, _state.StartIndex, _state.Count);
+            var result = _tokens.GetValues<TItem>(shortName, longName);
             if (result.Count != 0)
             {
                 value = func(result);
