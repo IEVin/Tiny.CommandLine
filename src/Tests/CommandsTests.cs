@@ -1,5 +1,5 @@
 using NUnit.Framework;
-// ReSharper disable AccessToModifiedClosure
+using static System.TinyCommandLine.Tests.Helper;
 
 namespace System.TinyCommandLine.Tests
 {
@@ -81,12 +81,6 @@ namespace System.TinyCommandLine.Tests
 
             Assert.IsTrue(innerFlag);
             Assert.IsFalse(outerFlag);
-        }
-
-        static void Run(string cmd, Implementation.CommandConfigurator configure)
-        {
-            var args = Helper.SplitArguments(cmd);
-            CommandLineParser.Run(args, configure);
         }
     }
 }

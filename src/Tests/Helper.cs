@@ -3,9 +3,15 @@ using System.Text;
 
 namespace System.TinyCommandLine.Tests
 {
-    public class Helper
+    public static class Helper
     {
-        public static string[] SplitArguments(string commandline)
+        public static void Run(string cmd, Implementation.CommandConfigurator configure)
+        {
+            var args = SplitArguments(cmd);
+            CommandLineParser.Run(args, configure);
+        }
+
+        static string[] SplitArguments(string commandline)
         {
             var list = new List<string>();
 

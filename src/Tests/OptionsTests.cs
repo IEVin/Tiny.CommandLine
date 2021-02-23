@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using NUnit.Framework;
+using static System.TinyCommandLine.Tests.Helper;
 
 namespace System.TinyCommandLine.Tests
 {
@@ -116,12 +117,6 @@ namespace System.TinyCommandLine.Tests
             Run(cmd, s => s.Option('v', "value", out result));
 
             return result;
-        }
-
-        static void Run(string cmd, Implementation.CommandConfigurator configure)
-        {
-            var args = Helper.SplitArguments(cmd);
-            CommandLineParser.Run(args, configure);
         }
     }
 }
