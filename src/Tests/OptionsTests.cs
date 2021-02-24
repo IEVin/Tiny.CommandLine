@@ -82,6 +82,27 @@ namespace System.TinyCommandLine.Tests
             Assert.AreEqual(list[2], "qq");
         }
 
+        [TestCase("--value=c -v 7 --value=a", ExpectedResult = "a")]
+        [TestCase("--value=b --value=c --value=a", ExpectedResult = "a")]
+        public string Multiple_value_should_apply_in_correct_order(string cmd) => ParseOption<string>(cmd);
+
+
+        [TestCase("-s a", ExpectedResult = "a|")]
+        [TestCase("--long b", ExpectedResult = "|b")]
+        [TestCase("-s c --long d", ExpectedResult = "c|d")]
+        [TestCase("--long e -s f", ExpectedResult = "f|e")]
+        public string Options_with_only_one_name_should_be_parsed_correctly(string cmd)
+        {
+            string longName = default;
+            string shortName = default;
+            Run(cmd, s => s
+                .Option("long", out longName)
+                .Option('s', out shortName)
+            );
+
+            return $"{shortName}|{longName}";
+        }
+
         [TestCase("--path \"C:\\\" -f", ExpectedResult = "\"C:\\\"", Ignore = "Issue with .net command line parser")]
         public string String_with_backslash_should_be_parsed_correctly(string cmd)
         {
