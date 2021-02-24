@@ -13,7 +13,6 @@ namespace System.TinyCommandLine.Implementation
         public bool IsHelpRequired;
     }
 
-
     public readonly ref struct CommandBuilder
     {
         readonly TokenCollection _tokens;
@@ -68,14 +67,7 @@ namespace System.TinyCommandLine.Implementation
             if (ArgumentInternal(out value))
                 return this;
 
-            var optionState = new OptionState<T>();
-            configure?.Invoke(new OptionBuilder<T>(optionState));
-
-            // TODO: Add argument name
-            if (optionState.IsRequired)
-                ExceptionHelper.ArgumentNotSpecified(null);
-
-            value = optionState.DefaultValue;
+            value = GetDefaultValueOrThrowException(configure);
             return this;
         }
 
@@ -100,8 +92,91 @@ namespace System.TinyCommandLine.Implementation
                 list.Add(item);
             }
 
-            value = list;
+            value = list.Count > 0
+                ? (IReadOnlyList<T>) list
+                : GetDefaultValueOrThrowException(configure);
+
             return this;
+        }
+
+        public CommandBuilder Option<T>(char shortName, string longName, out T value, OptionConfigurator<T> configure = null)
+        {
+            if (_state.SubCommand != null)
+            {
+                value = default;
+                return this;
+            }
+
+            if (_helpGen != null)
+            {
+                _helpGen.AddOption(shortName, longName, configure);
+                value = default;
+                return this;
+            }
+
+            var valueOffset = 0;
+            var valueIndex = -1;
+
+            bool isFlag = typeof(T) == typeof(bool);
+            _tokens.EnumerateOptions(shortName, longName, isFlag, (index, offset) =>
+            {
+                valueIndex = index;
+                valueOffset = offset;
+            });
+
+            if (valueIndex >= 0)
+            {
+                value = GetOptionValue<T>(valueIndex, valueOffset);
+                return this;
+            }
+
+            value = GetDefaultValueOrThrowException(configure);
+            return this;
+        }
+
+        public CommandBuilder OptionList<T>(char shortName, string longName, out IReadOnlyList<T> value, OptionConfigurator<IReadOnlyList<T>> configure = null)
+        {
+            if (_state.SubCommand != null)
+            {
+                value = default;
+                return this;
+            }
+
+            if (_helpGen != null)
+            {
+                _helpGen.AddOption(shortName, longName, configure);
+                value = default;
+                return this;
+            }
+
+            bool isFlag = typeof(T) == typeof(bool);
+
+            var values = new List<(int, int)>();
+            _tokens.EnumerateOptions(shortName, longName, isFlag, (index, offset) => { values.Add((index, offset)); });
+
+            var list = new List<T>(values.Count);
+            foreach (var (index, offset) in values)
+            {
+                var optionValue = GetOptionValue<T>(index, offset);
+                list.Add(optionValue);
+            }
+
+            value = list.Count > 0
+                ? (IReadOnlyList<T>) list
+                : GetDefaultValueOrThrowException(configure);
+
+            return this;
+        }
+
+        T GetDefaultValueOrThrowException<T>(OptionConfigurator<T> configure)
+        {
+            var optionState = new OptionState<T>();
+            configure?.Invoke(new OptionBuilder<T>(optionState));
+
+            if (optionState.IsRequired)
+                ExceptionHelper.OptionNotSpecified(null); // TODO: Add option name
+
+            return optionState.DefaultValue;
         }
 
         bool ArgumentInternal<T>(out T value)
@@ -120,49 +195,23 @@ namespace System.TinyCommandLine.Implementation
             return true;
         }
 
-
-        public CommandBuilder Option<T>(char shortName, string longName, out T value, OptionConfigurator<T> configure = null)
-            => OptionsInternal<T, T>(shortName, longName, out value, configure, x => x[x.Count - 1]);
-
-        public CommandBuilder OptionList<T>(char shortName, string longName, out IReadOnlyList<T> value, OptionConfigurator<IReadOnlyList<T>> configure = null)
-            => OptionsInternal<IReadOnlyList<T>, T>(shortName, longName, out value, configure, x => x);
-
-        CommandBuilder OptionsInternal<T, TItem>(char shortName, string longName, out T value, OptionConfigurator<T> configure, Func<List<TItem>, T> func)
+        T GetOptionValue<T>(int valueIndex, int valueOffset)
         {
-            if (_state.SubCommand != null)
+            if (typeof(T) == typeof(bool) && valueOffset == 0)
             {
-                value = default;
-                return this;
+                return Converter<T>.Cast(true);
             }
 
-            if (_helpGen != null)
-            {
-                _helpGen.AddOption(shortName, longName, configure);
-                value = default;
-                return this;
-            }
+            // TODO: remove this hack
+            var optionName = valueOffset > 0
+                ? _tokens[valueIndex].Remove(valueOffset - 1)
+                : _tokens[valueIndex - 1];
 
-            var result = _tokens.GetValues<TItem>(shortName, longName);
-            if (result.Count != 0)
-            {
-                value = func(result);
-                return this;
-            }
+            if (valueIndex >= _tokens.Count)
+                throw ExceptionHelper.OptionHasNoValue(optionName);
 
-            var optionState = new OptionState<T>();
-            configure?.Invoke(new OptionBuilder<T>(optionState));
-
-            if (optionState.IsRequired)
-            {
-                var name = longName == null
-                    ? "-" + shortName
-                    : "--" + longName;
-
-                ExceptionHelper.OptionNotSpecified(name);
-            }
-
-            value = optionState.DefaultValue;
-            return this;
+            string str = _tokens[valueIndex].Substring(valueOffset);
+            return Converter<T>.Parse(str, optionName);
         }
 
         public CommandBuilder Check(Func<bool> predicate, string message)

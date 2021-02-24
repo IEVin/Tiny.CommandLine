@@ -5,53 +5,64 @@ namespace System.TinyCommandLine.Implementation
 {
     class TokenCollection
     {
-        struct OptionInfo
+        readonly struct OptionInfo : IComparable<OptionInfo>
         {
-            public int Index;
-            public int ValueIndex;
-            public bool IsLong;
+            public readonly string Str;
+            public readonly int Index;
+            public readonly int Length;
+
+            public OptionInfo(string str, int length, int index)
+            {
+                Str = str;
+                Index = index;
+                Length = length;
+            }
+
+            public int CompareTo(OptionInfo other)
+            {
+                int len = Math.Max(Length, other.Length);
+
+                int order = string.CompareOrdinal(Str, 0, other.Str, 0, len);
+                return order != 0 ? order : Index.CompareTo(other.Index);
+            }
         }
 
-        readonly List<string> _tokens;
+        readonly string[] _tokens;
         readonly List<OptionInfo> _options;
         readonly BitArray _used;
         int _nextItemIndex;
 
-        TokenCollection(List<string> tokens, List<OptionInfo> options)
+        TokenCollection(string[] tokens, List<OptionInfo> options)
         {
             _tokens = tokens;
             _options = options;
-            _used = new BitArray(tokens.Count);
+            _used = new BitArray(tokens.Length);
         }
 
         public static TokenCollection Tokenize(string[] args)
         {
-            var tokens = new List<string>(args.Length * 2);
             var options = new List<OptionInfo>(args.Length);
 
-            foreach (var q in args)
+            for (int i = 0; i < args.Length; i++)
             {
-                if (q.Length > 1 && q[0] == '-')
-                {
-                    var option = new OptionInfo
-                    {
-                        Index = tokens.Count,
-                        IsLong = q.Length > 2 && q[1] == '-',
-                        ValueIndex = q.IndexOf('=') + 1
-                    };
+                var q = args[i];
+                if (q.Length <= 1 || q[0] != '-')
+                    continue;
 
-                    options.Add(option);
-                }
+                int ind = q.IndexOf('=');
+                var option = new OptionInfo(q, ind < 0 ? q.Length : ind, i);
 
-                tokens.Add(q);
+                options.Add(option);
             }
 
-            options.Sort((a, b) => string.CompareOrdinal(tokens[a.Index], tokens[b.Index]));
+            options.Sort();
 
-            return new TokenCollection(tokens, options);
+            return new TokenCollection(args, options);
         }
 
-        public int RemainingItemsCount => _tokens.Count - _nextItemIndex; // TODO: Add more accurate prediction
+        public int Count => _tokens.Length;
+
+        public int RemainingItemsCount => _tokens.Length - _nextItemIndex; // TODO: Add more accurate prediction
 
         public string this[int index] => _tokens[index];
 
@@ -70,86 +81,52 @@ namespace System.TinyCommandLine.Implementation
             return -1;
         }
 
-        public List<T> GetValues<T>(char shortName, string longName)
+        public void EnumerateOptions(char shortName, string longName, bool isFlag, Action<int, int> action)
         {
-            var result = new List<T>();
+            var (loShort, hiShort) = shortName != '\0' ? BinarySearchRange("-" + shortName) : default;
+            var (loLong, hiLong) = longName != null ? BinarySearchRange("--" + longName) : default;
 
-            for (var i = _nextItemIndex; i < _used.Count;)
+            while (loLong < hiLong || loShort < hiShort)
             {
-                var optionIndex = FindOptionIndex(shortName, longName, i);
-                if (optionIndex < 0)
-                    break;
+                var indLong = loLong < hiLong ? _options[loLong].Index : int.MaxValue;
+                var indShort = loShort < hiShort ? _options[loShort].Index : int.MaxValue;
 
-                var info = _options[optionIndex];
-
-                var index = info.ValueIndex == 0 ? info.Index + 1 : info.Index;
-                i = index + 1;
-
-                MarkAsUsed(info.Index);
-
-                if (typeof(T) == typeof(bool) && info.ValueIndex == 0)
-                {
-                    result.Add(Converter<T>.Cast(true));
+                int index = indShort < indLong ? loShort++ : loLong++;
+                var option = _options[index];
+                if (_used[option.Index])
                     continue;
+
+                MarkAsUsed(option.Index);
+
+                var valOffset = option.Length + 1;
+                var valIndex = option.Index;
+
+                if (option.Str.Length == option.Length)
+                {
+                    valOffset = 0;
+                    valIndex++;
+
+                    if (!isFlag)
+                    {
+                        if (valIndex >= _tokens.Length)
+                            throw ExceptionHelper.OptionHasNoValue(option.Str.Remove(option.Length));
+
+                        MarkAsUsed(valIndex);
+                    }
                 }
 
-                if (index >= _tokens.Count)
-                    throw new InvalidSyntaxException($"The option --{longName} must have a value");
-
-                MarkAsUsed(index);
-                var rawValue = _tokens[index].Substring(info.ValueIndex);
-                result.Add(Converter<T>.Parse(rawValue, longName));
+                action(valIndex, valOffset);
             }
-
-            return result;
         }
 
-        int FindOptionIndex(char shortName, string longName, int startIndex)
+        (int, int) BinarySearchRange(string name)
         {
-            var tokenInd = int.MaxValue;
-            var optionInd = -1;
+            var lowerBound = ~_options.BinarySearch(new OptionInfo(name, name.Length, int.MinValue));
 
-            // TODO: Change it to binary search
-            if (shortName != '\0')
-            {
-                for (var i = 0; i < _options.Count; i++)
-                {
-                    var q = _options[i];
-                    if (!q.IsLong && startIndex <= q.Index && _tokens[q.Index][1] == shortName)
-                    {
-                        if (q.Index < tokenInd)
-                        {
-                            tokenInd = q.Index;
-                            optionInd = i;
-                        }
-                    }
-                }
-            }
+            var upperBound = ~_options.BinarySearch(lowerBound, _options.Count - lowerBound,
+                new OptionInfo(name, name.Length, int.MaxValue), null);
 
-            if (longName != null)
-            {
-                for (var i = 0; i < _options.Count; i++)
-                {
-                    var q = _options[i];
-
-                    var len = q.ValueIndex == 0
-                        ? _tokens[q.Index].Length - 2
-                        : q.ValueIndex - 3;
-
-                    if (q.IsLong && startIndex <= q.Index && len == longName.Length &&
-                        string.CompareOrdinal(_tokens[q.Index], 2, longName, 0, longName.Length) == 0)
-                    {
-                        if (q.Index < tokenInd)
-                        {
-                            tokenInd = q.Index;
-                            optionInd = i;
-                        }
-                    }
-                }
-            }
-
-            return optionInd;
+            return (lowerBound, upperBound);
         }
-
     }
 }
