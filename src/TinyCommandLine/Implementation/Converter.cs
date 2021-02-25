@@ -9,10 +9,11 @@ namespace System.TinyCommandLine.Implementation
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T Cast<TIn>(TIn value) => (T)(object)value;
 
-        public static T Parse(string str, string optionName)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T Parse(ReadOnlySpan<char> str, ReadOnlySpan<char> optionName)
         {
             if (typeof(T) == typeof(string))
-                return Cast(str);
+                return Cast(str.ToString());
 
             if (typeof(T) == typeof(char))
             {
@@ -23,9 +24,9 @@ namespace System.TinyCommandLine.Implementation
 
             if (typeof(T) == typeof(bool))
             {
-                if (str == "True" || str == "true" || str == "1")
+                if (str.SequenceEqual("True") || str.SequenceEqual("true") || str.SequenceEqual("1"))
                     return Cast(true);
-                if (str == "False" || str == "false" || str == "0")
+                if (str.SequenceEqual("False") || str.SequenceEqual("false") || str.SequenceEqual("0"))
                     return Cast(false);
 
                 throw ExceptionHelper.InvalidOptionType(optionName, "bool");
@@ -52,7 +53,7 @@ namespace System.TinyCommandLine.Implementation
                     : throw ExceptionHelper.InvalidOptionType(optionName, nameof(DateTime));
             }
 
-            throw new NotSupportedException($"The type of option '{optionName}' is not supported");
+            throw ExceptionHelper.OptionTypeNotSupported(optionName);
         }
     }
 }

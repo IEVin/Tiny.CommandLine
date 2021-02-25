@@ -196,10 +196,10 @@ namespace System.TinyCommandLine.Implementation
         T GetOptionValue<T>(int index, int length)
         {
             var token = _tokens[index];
-            if (token.Length != length)
+            if (length < token.Length)
             {
-                var optionName = token.Remove(length);
-                var str = token.Substring(length + 1);
+                var optionName = token.AsSpan(0, length);
+                var str = token.AsSpan(length + 1);
                 return Converter<T>.Parse(str, optionName);
             }
 
