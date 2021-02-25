@@ -93,7 +93,7 @@ namespace System.TinyCommandLine.Implementation
             }
 
             value = list.Count > 0
-                ? (IReadOnlyList<T>) list
+                ? list
                 : GetDefaultValueOrThrowException(configure);
 
             return this;
@@ -114,23 +114,22 @@ namespace System.TinyCommandLine.Implementation
                 return this;
             }
 
-            var valueOffset = 0;
-            var valueIndex = -1;
-
             bool isFlag = typeof(T) == typeof(bool);
-            _tokens.EnumerateOptions(shortName, longName, isFlag, (index, offset) =>
-            {
-                valueIndex = index;
-                valueOffset = offset;
-            });
+            var itr = _tokens.IterateOptions(shortName, longName, isFlag);
 
-            if (valueIndex >= 0)
+            int optionIndex = int.MinValue;
+            int optionLength = int.MinValue;
+
+            while (itr.TryMoveNext(out var index, out var offset))
             {
-                value = GetOptionValue<T>(valueIndex, valueOffset);
-                return this;
+                optionIndex = index;
+                optionLength = offset;
             }
 
-            value = GetDefaultValueOrThrowException(configure);
+            value = optionIndex >= 0
+                ? GetOptionValue<T>(optionIndex, optionLength)
+                : GetDefaultValueOrThrowException(configure);
+
             return this;
         }
 
@@ -151,18 +150,17 @@ namespace System.TinyCommandLine.Implementation
 
             bool isFlag = typeof(T) == typeof(bool);
 
-            var values = new List<(int, int)>();
-            _tokens.EnumerateOptions(shortName, longName, isFlag, (index, offset) => { values.Add((index, offset)); });
+            var itr = _tokens.IterateOptions(shortName, longName, isFlag);
 
-            var list = new List<T>(values.Count);
-            foreach (var (index, offset) in values)
+            var result = new List<T>();
+            while (itr.TryMoveNext(out var index, out var length))
             {
-                var optionValue = GetOptionValue<T>(index, offset);
-                list.Add(optionValue);
+                var optionValue = GetOptionValue<T>(index, length);
+                result.Add(optionValue);
             }
 
-            value = list.Count > 0
-                ? (IReadOnlyList<T>) list
+            value = result.Count > 0
+                ? result
                 : GetDefaultValueOrThrowException(configure);
 
             return this;
@@ -195,23 +193,24 @@ namespace System.TinyCommandLine.Implementation
             return true;
         }
 
-        T GetOptionValue<T>(int valueIndex, int valueOffset)
+        T GetOptionValue<T>(int index, int length)
         {
-            if (typeof(T) == typeof(bool) && valueOffset == 0)
+            var token = _tokens[index];
+            if (token.Length != length)
             {
-                return Converter<T>.Cast(true);
+                var optionName = token.Remove(length);
+                var str = token.Substring(length + 1);
+                return Converter<T>.Parse(str, optionName);
             }
 
-            // TODO: remove this hack
-            var optionName = valueOffset > 0
-                ? _tokens[valueIndex].Remove(valueOffset - 1)
-                : _tokens[valueIndex - 1];
+            if (typeof(T) == typeof(bool))
+                return Converter<T>.Cast(true);
 
-            if (valueIndex >= _tokens.Count)
-                throw ExceptionHelper.OptionHasNoValue(optionName);
+            if (index + 1 >= _tokens.Count)
+                throw ExceptionHelper.OptionHasNoValue(token);
 
-            string str = _tokens[valueIndex].Substring(valueOffset);
-            return Converter<T>.Parse(str, optionName);
+            var valueStr = _tokens[index + 1];
+            return Converter<T>.Parse(valueStr, token);
         }
 
         public CommandBuilder Check(Func<bool> predicate, string message)

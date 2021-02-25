@@ -5,28 +5,6 @@ namespace System.TinyCommandLine.Implementation
 {
     class TokenCollection
     {
-        readonly struct OptionInfo : IComparable<OptionInfo>
-        {
-            public readonly string Str;
-            public readonly int Index;
-            public readonly int Length;
-
-            public OptionInfo(string str, int length, int index)
-            {
-                Str = str;
-                Index = index;
-                Length = length;
-            }
-
-            public int CompareTo(OptionInfo other)
-            {
-                int len = Math.Max(Length, other.Length);
-
-                int order = string.CompareOrdinal(Str, 0, other.Str, 0, len);
-                return order != 0 ? order : Index.CompareTo(other.Index);
-            }
-        }
-
         readonly string[] _tokens;
         readonly List<OptionInfo> _options;
         readonly BitArray _used;
@@ -81,52 +59,92 @@ namespace System.TinyCommandLine.Implementation
             return -1;
         }
 
-        public void EnumerateOptions(char shortName, string longName, bool isFlag, Action<int, int> action)
+        public OptionsIterator IterateOptions(char shortName, string longName, bool isFlag)
+            => new OptionsIterator(this, shortName, longName, isFlag);
+
+        void BinarySearchOptionRange(string name, out int lowerBound, out int upperBound)
         {
-            var (loShort, hiShort) = shortName != '\0' ? BinarySearchRange("-" + shortName) : default;
-            var (loLong, hiLong) = longName != null ? BinarySearchRange("--" + longName) : default;
+            lowerBound = ~_options.BinarySearch(new OptionInfo(name, name.Length, int.MinValue));
 
-            while (loLong < hiLong || loShort < hiShort)
+            upperBound = ~_options.BinarySearch(lowerBound, _options.Count - lowerBound,
+                new OptionInfo(name, name.Length, int.MaxValue), null);
+        }
+
+        public struct OptionsIterator
+        {
+            readonly TokenCollection _owner;
+            readonly int _lastShort;
+            readonly int _lastLong;
+            readonly bool _isFlag;
+
+            int _indShort;
+            int _indLong;
+
+            internal OptionsIterator(TokenCollection owner, char shortName, string longName, bool isFlag)
+                : this()
             {
-                var indLong = loLong < hiLong ? _options[loLong].Index : int.MaxValue;
-                var indShort = loShort < hiShort ? _options[loShort].Index : int.MaxValue;
+                _owner = owner;
+                _isFlag = isFlag;
 
-                int index = indShort < indLong ? loShort++ : loLong++;
-                var option = _options[index];
-                if (_used[option.Index])
-                    continue;
+                if (shortName != '\0')
+                    _owner.BinarySearchOptionRange("-" + shortName, out _indShort, out _lastShort);
 
-                MarkAsUsed(option.Index);
+                if (longName != null)
+                    _owner.BinarySearchOptionRange("--" + longName, out _indLong, out _lastLong);
+            }
 
-                var valOffset = option.Length + 1;
-                var valIndex = option.Index;
+            public bool TryMoveNext(out int index, out int length)
+            {
+                var options = _owner._options;
 
-                if (option.Str.Length == option.Length)
+                while (_indLong < _lastLong || _indShort < _lastShort)
                 {
-                    valOffset = 0;
-                    valIndex++;
+                    var tokenIndLong = _indLong < _lastLong ? options[_indLong].Index : int.MaxValue;
+                    var tokenIndShort = _indShort < _lastShort ? options[_indShort].Index : int.MaxValue;
 
-                    if (!isFlag)
-                    {
-                        if (valIndex >= _tokens.Length)
-                            throw ExceptionHelper.OptionHasNoValue(option.Str.Remove(option.Length));
+                    int optionIndex = tokenIndShort < tokenIndLong ? _indShort++ : _indLong++;
 
-                        MarkAsUsed(valIndex);
-                    }
+                    var option = options[optionIndex];
+                    if (_owner._used[option.Index])
+                        continue;
+
+                    _owner.MarkAsUsed(option.Index);
+
+                    index = option.Index;
+                    length = option.Length;
+
+                    if (option.Str.Length == length && !_isFlag && index + 1 < _owner._tokens.Length)
+                        _owner.MarkAsUsed(index + 1);
+
+                    return true;
                 }
 
-                action(valIndex, valOffset);
+                index = default;
+                length = default;
+                return false;
             }
         }
 
-        (int, int) BinarySearchRange(string name)
+        readonly struct OptionInfo : IComparable<OptionInfo>
         {
-            var lowerBound = ~_options.BinarySearch(new OptionInfo(name, name.Length, int.MinValue));
+            public readonly string Str;
+            public readonly int Index;
+            public readonly int Length;
 
-            var upperBound = ~_options.BinarySearch(lowerBound, _options.Count - lowerBound,
-                new OptionInfo(name, name.Length, int.MaxValue), null);
+            public OptionInfo(string str, int length, int index)
+            {
+                Str = str;
+                Index = index;
+                Length = length;
+            }
 
-            return (lowerBound, upperBound);
+            public int CompareTo(OptionInfo other)
+            {
+                int len = Math.Max(Length, other.Length);
+
+                int order = string.CompareOrdinal(Str, 0, other.Str, 0, len);
+                return order != 0 ? order : Index.CompareTo(other.Index);
+            }
         }
     }
 }
