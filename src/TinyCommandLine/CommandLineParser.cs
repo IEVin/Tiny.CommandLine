@@ -33,37 +33,36 @@ namespace System.TinyCommandLine
     {
         public static void Run(string[] args, CommandConfigurator configure)
         {
-            Action handler = null;
+            var tokens = TokenCollection.Tokenize(args);
+            var state = new State();
 
+            while (true)
             {
-                var tokens = TokenCollection.Tokenize(args);
-                var state = new State();
+                var builder = new CommandBuilder(tokens, state);
+                configure(builder);
 
-                while (true)
+                var index = tokens.GetNextIndex();
+                if (index >= 0 && (tokens[index] == "-h" || tokens[index] == "--help"))
                 {
-                    configure(new CommandBuilder(tokens, state));
+                    var help = new HelpCollector();
+                    configure(new CommandBuilder(help));
 
-                    if (state.IsHelpRequired)
-                    {
-                        var helpGen = new HelpGenerator();
-                        configure(new CommandBuilder(helpGen));
+                    help.Show<IHelpBuilder>(null);
+                    return;
+                }
 
-                        handler = helpGen.Show;
-                        break;
-                    }
-
-                    if (state.SubCommand == null)
-                    {
-                        handler = state.Handler;
-                        break;
-                    }
-                
                 if(state.ErrReason != null)
                     break;
 
+                if (state.SubCommand != null)
+                {
                     configure = state.SubCommand;
                     state.SubCommand = null;
+                    state.IsFinished = false;
+                    continue;
                 }
+
+                break;
             }
 
             if (state.ErrReason != null)
@@ -72,7 +71,7 @@ namespace System.TinyCommandLine
                 return;
             }
 
-            handler?.Invoke();
+            state.Handler?.Invoke();
         }
 
         static void ShowError(string text)

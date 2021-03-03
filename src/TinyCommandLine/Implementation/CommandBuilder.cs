@@ -10,7 +10,6 @@ namespace System.TinyCommandLine.Implementation
     {
         public CommandConfigurator SubCommand;
         public Action Handler;
-        public bool IsHelpRequired;
         public string ErrReason;
         public bool IsFinished;
     }
@@ -18,34 +17,50 @@ namespace System.TinyCommandLine.Implementation
     public readonly ref struct CommandBuilder
     {
         readonly TokenCollection _tokens;
-        readonly HelpGenerator _helpGen;
+        readonly HelpCollector _help;
         readonly State _state;
 
-        internal CommandBuilder(HelpGenerator helpGen) : this(null, null) => _helpGen = helpGen;
+        internal CommandBuilder(HelpCollector help) : this(null, null) => _help = help;
 
         internal CommandBuilder(TokenCollection tokens, State state)
         {
-            _helpGen = null;
+            _help = null;
             _tokens = tokens;
             _state = state;
         }
 
+        bool CheckState<T>(out T valueDefault, OptionConfigurator<T> configure, char shortName='\0', string longName = null)
+        {
+            valueDefault = default;
+            if (_help != null)
+            {
+                _help.AddOption(shortName, longName, configure);
+                return false;
+            }
+
+            if (_state.IsFinished)
+                return false;
+
+            return true;
+        }
+
         public CommandBuilder Command(string name, CommandConfigurator configure)
         {
-            if (_state.SubCommand != null)
-                return this;
-
-            if (_helpGen != null)
+            if (_help != null)
             {
-                _helpGen.AddCommand(name, configure);
+                _help.AddCommand(name, configure);
                 return this;
             }
+
+            if (_state.IsFinished)
+                return this;
 
             var index = _tokens.GetNextIndex();
             if (index >= 0 && _tokens[index] == name)
             {
                 _tokens.MarkAsUsed(index);
                 _state.SubCommand = configure;
+                _state.IsFinished = true;
             }
 
             return this;
@@ -53,40 +68,20 @@ namespace System.TinyCommandLine.Implementation
 
         public CommandBuilder Argument<T>(out T value, OptionConfigurator<T> configure = null)
         {
-            if (_state.SubCommand != null)
-            {
-                value = default;
+            if (!CheckState(out value, configure))
                 return this;
-            }
-
-            if (_helpGen != null)
-            {
-                _helpGen.AddArgument(configure);
-                value = default;
-                return this;
-            }
 
             if (ArgumentInternal(out value))
                 return this;
 
-            value = GetDefaultValueOrThrowException(configure);
+            value = GetDefaultValue(configure);
             return this;
         }
 
         public CommandBuilder ArgumentList<T>(out IReadOnlyList<T> value, OptionConfigurator<IReadOnlyList<T>> configure = null)
         {
-            if (_state.SubCommand != null)
-            {
-                value = default;
+            if (!CheckState(out value, configure))
                 return this;
-            }
-
-            if (_helpGen != null)
-            {
-                _helpGen.AddArgument(configure);
-                value = default;
-                return this;
-            }
 
             var list = new List<T>(_tokens.RemainingItemsCount);
             while (ArgumentInternal(out T item))
@@ -103,18 +98,8 @@ namespace System.TinyCommandLine.Implementation
 
         public CommandBuilder Option<T>(char shortName, string longName, out T value, OptionConfigurator<T> configure = null)
         {
-            if (_state.SubCommand != null)
-            {
-                value = default;
+            if (!CheckState(out value, configure, shortName, longName))
                 return this;
-            }
-
-            if (_helpGen != null)
-            {
-                _helpGen.AddOption(shortName, longName, configure);
-                value = default;
-                return this;
-            }
 
             bool isFlag = typeof(T) == typeof(bool);
             var itr = _tokens.IterateOptions(shortName, longName, isFlag);
@@ -137,18 +122,8 @@ namespace System.TinyCommandLine.Implementation
 
         public CommandBuilder OptionList<T>(char shortName, string longName, out IReadOnlyList<T> value, OptionConfigurator<IReadOnlyList<T>> configure = null)
         {
-            if (_state.SubCommand != null)
-            {
-                value = default;
+            if (!CheckState(out value, configure, shortName, longName))
                 return this;
-            }
-
-            if (_helpGen != null)
-            {
-                _helpGen.AddOption(shortName, longName, configure);
-                value = default;
-                return this;
-            }
 
             bool isFlag = typeof(T) == typeof(bool);
 
@@ -250,7 +225,7 @@ namespace System.TinyCommandLine.Implementation
 
         public CommandBuilder Check(Func<bool> predicate, string message)
         {
-            if (_helpGen != null)
+            if (_help != null || _state.IsFinished)
                 return this;
 
             if (predicate())
@@ -262,19 +237,17 @@ namespace System.TinyCommandLine.Implementation
 
         public CommandBuilder HelpText(string text)
         {
-            _helpGen?.AddDesc(text);
+            _help?.HelpText(text);
             return this;
         }
 
         public void Handler(Action handler)
         {
-            if (_helpGen != null)
+            if(_help != null || _state.IsFinished)
                 return;
 
-            if (_state.SubCommand != null)
-                return;
-
-            _state.Handler = handler;
+            if (_state.SubCommand == null)
+                _state.Handler = handler;
         }
     }
 }
