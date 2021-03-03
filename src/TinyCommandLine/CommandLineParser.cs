@@ -35,7 +35,6 @@ namespace System.TinyCommandLine
         {
             Action handler = null;
 
-            try
             {
                 var tokens = TokenCollection.Tokenize(args);
                 var state = new State();
@@ -58,18 +57,19 @@ namespace System.TinyCommandLine
                         handler = state.Handler;
                         break;
                     }
+                
+                if(state.ErrReason != null)
+                    break;
 
                     configure = state.SubCommand;
                     state.SubCommand = null;
                 }
             }
-            catch (InvalidSyntaxException ex)
+
+            if (state.ErrReason != null)
             {
-                ShowError(ex.Message);
-            }
-            catch (CheckFailedException ex)
-            {
-                ShowError(ex.Message);
+                ShowError(state.ErrReason);
+                return;
             }
 
             handler?.Invoke();

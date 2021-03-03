@@ -11,6 +11,8 @@ namespace System.TinyCommandLine.Implementation
         public CommandConfigurator SubCommand;
         public Action Handler;
         public bool IsHelpRequired;
+        public string ErrReason;
+        public bool IsFinished;
     }
 
     public readonly ref struct CommandBuilder
@@ -94,7 +96,7 @@ namespace System.TinyCommandLine.Implementation
 
             value = list.Count > 0
                 ? list
-                : GetDefaultValueOrThrowException(configure);
+                : GetDefaultValue(configure);
 
             return this;
         }
@@ -128,7 +130,7 @@ namespace System.TinyCommandLine.Implementation
 
             value = optionIndex >= 0
                 ? GetOptionValue<T>(optionIndex, optionLength)
-                : GetDefaultValueOrThrowException(configure);
+                : GetDefaultValue(configure);
 
             return this;
         }
@@ -156,23 +158,33 @@ namespace System.TinyCommandLine.Implementation
             while (itr.TryMoveNext(out var index, out var length))
             {
                 var optionValue = GetOptionValue<T>(index, length);
+                if (_state.IsFinished)
+                {
+                    value = default;
+                    return this;
+                }
+
                 result.Add(optionValue);
             }
 
             value = result.Count > 0
                 ? result
-                : GetDefaultValueOrThrowException(configure);
+                : GetDefaultValue(configure);
 
             return this;
         }
 
-        T GetDefaultValueOrThrowException<T>(OptionConfigurator<T> configure)
+        T GetDefaultValue<T>(OptionConfigurator<T> configure)
         {
             var optionState = new OptionState<T>();
             configure?.Invoke(new OptionBuilder<T>(optionState));
 
             if (optionState.IsRequired)
-                ExceptionHelper.OptionNotSpecified(null); // TODO: Add option name
+            {
+                // TODO: Add option name
+                SetError($"Option {null} not specified.");
+                return default;
+            }
 
             return optionState.DefaultValue;
         }
@@ -189,8 +201,13 @@ namespace System.TinyCommandLine.Implementation
             _tokens.MarkAsUsed(index);
 
             var valStr = _tokens[index];
-            value = Converter<T>.Parse(valStr, string.Empty);
-            return true;
+
+            // TODO: Add option name
+            if (Converter<T>.TryParse(valStr, null, out value, out var error))
+                return true;
+
+            SetError(error);
+            return false;
         }
 
         T GetOptionValue<T>(int index, int length)
@@ -200,17 +217,35 @@ namespace System.TinyCommandLine.Implementation
             {
                 var optionName = token.AsSpan(0, length);
                 var str = token.AsSpan(length + 1);
-                return Converter<T>.Parse(str, optionName);
+
+                if (Converter<T>.TryParse(str, optionName, out var value, out var error))
+                    return value;
+
+                SetError(error);
+                return default;
             }
 
             if (typeof(T) == typeof(bool))
-                return Converter<T>.Cast(true);
+                return (T) (object) true;
 
-            if (index + 1 >= _tokens.Count)
-                throw ExceptionHelper.OptionHasNoValue(token);
+            if (index + 1 < _tokens.Count)
+            {
+                var valueStr = _tokens[index + 1];
+                if (Converter<T>.TryParse(valueStr, token, out var value, out var error))
+                    return value;
 
-            var valueStr = _tokens[index + 1];
-            return Converter<T>.Parse(valueStr, token);
+                SetError(error);
+                return default;
+            }
+
+            SetError($"Option {token} value expected.");
+            return default;
+        }
+
+        void SetError(string reason)
+        {
+            _state.ErrReason = reason;
+            _state.IsFinished = true;
         }
 
         public CommandBuilder Check(Func<bool> predicate, string message)
@@ -221,7 +256,8 @@ namespace System.TinyCommandLine.Implementation
             if (predicate())
                 return this;
 
-            throw new CheckFailedException(message);
+            SetError(message);
+            return this;
         }
 
         public CommandBuilder HelpText(string text)

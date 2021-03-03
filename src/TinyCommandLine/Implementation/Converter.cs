@@ -5,55 +5,73 @@ namespace System.TinyCommandLine.Implementation
 {
     static class Converter<T>
     {
-        // This method will be optimized with jit and should do zero cpu instruction
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T Cast<TIn>(TIn value) => (T)(object)value;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T Parse(ReadOnlySpan<char> str, ReadOnlySpan<char> optionName)
+        public static bool TryParse(ReadOnlySpan<char> str, ReadOnlySpan<char> optionName, out T value, out string error)
         {
             if (typeof(T) == typeof(string))
-                return Cast(str.ToString());
+                return GetResult(str.ToString(), out value, out error);
 
             if (typeof(T) == typeof(char))
             {
-                return str.Length == 1
-                    ? Cast(str[0])
-                    : throw ExceptionHelper.InvalidOptionType(optionName, "char");
+                if (str.Length == 1)
+                    return GetResult(str[0], out value, out error);
+
+                return GetError(optionName, "char", out value, out error);
             }
 
             if (typeof(T) == typeof(bool))
             {
                 if (str.SequenceEqual("True") || str.SequenceEqual("true") || str.SequenceEqual("1"))
-                    return Cast(true);
+                    return GetResult(true, out value, out error);
                 if (str.SequenceEqual("False") || str.SequenceEqual("false") || str.SequenceEqual("0"))
-                    return Cast(false);
+                    return GetResult(false, out value, out error);
 
-                throw ExceptionHelper.InvalidOptionType(optionName, "bool");
+                return GetError(optionName, "bool", out value, out error);
             }
 
             if (typeof(T) == typeof(int))
             {
-                return int.TryParse(str, out var result)
-                    ? Cast(result)
-                    : throw ExceptionHelper.InvalidOptionType(optionName, "int");
+                if (int.TryParse(str, out var result))
+                    return GetResult(result, out value, out error);
+
+                return GetError(optionName, "int", out value, out error);
             }
 
             if (typeof(T) == typeof(double))
             {
-                return double.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out var result)
-                    ? Cast(result)
-                    : throw ExceptionHelper.InvalidOptionType(optionName, "double");
+                if (double.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out var result))
+                    return GetResult(result, out value, out error);
+
+                return GetError(optionName, "double", out value, out error);
             }
 
             if (typeof(T) == typeof(DateTime))
             {
-                return DateTime.TryParse(str, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out var result)
-                    ? Cast(result)
-                    : throw ExceptionHelper.InvalidOptionType(optionName, nameof(DateTime));
+                if(DateTime.TryParse(str, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out var result))
+                    return GetResult(result, out value, out error);
+
+                return GetError(optionName, nameof(DateTime), out value, out error);
             }
 
-            throw ExceptionHelper.OptionTypeNotSupported(optionName);
+            error = $"The type of option '{optionName.ToString()}' is not supported";
+            value = default;
+            return false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static bool GetResult<TIn>(TIn value, out T result, out string error)
+        {
+            error = default;
+            result = (T) (object) value;
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static bool GetError(ReadOnlySpan<char> name, string type, out T result, out string error)
+        {
+            error = $"Option {name.ToString()} must be a {type}.";
+            result = default;
+            return false;
         }
     }
 }
