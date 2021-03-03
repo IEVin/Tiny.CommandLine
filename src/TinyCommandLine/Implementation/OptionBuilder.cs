@@ -2,7 +2,8 @@ namespace System.TinyCommandLine.Implementation
 {
     class OptionState<T>
     {
-        public string Text;
+        public string ValueName;
+        public string HelpText;
         public T DefaultValue;
         public bool IsRequired;
         public bool IsHidden;
@@ -14,9 +15,15 @@ namespace System.TinyCommandLine.Implementation
 
         internal OptionBuilder(OptionState<T> state) => _state = state;
 
+        public OptionBuilder<T> ValueName(string name)
+        {
+            _state.ValueName = name;
+            return this;
+        }
+
         public OptionBuilder<T> HelpText(string text)
         {
-            _state.Text = text;
+            _state.HelpText = text;
             return this;
         }
 

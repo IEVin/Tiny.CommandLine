@@ -16,9 +16,10 @@ namespace System.TinyCommandLine.Samples
                 .Option('o', "output", out string output, "The file to save search result.")
                 .Option('e', "expr", out string expression, b => b
                     .HelpText("The file to save search result.")
+                    .ValueName("expresion")
                     .Required()
                 )
-                .Option('s', "--line-separator", out string separator, b => b
+                .Option('s', "line-separator", out string separator, b => b
                     .HelpText("The line ending symbol.")
                     .Default("\n")
                 )
