@@ -62,6 +62,12 @@ namespace System.TinyCommandLine
                     continue;
                 }
 
+                index = tokens.GetNextIndex();
+                if (index >= 0)
+                {
+                    state.ErrReason = $"Option {tokens[index]} is unknown.";
+                }
+
                 break;
             }
 
