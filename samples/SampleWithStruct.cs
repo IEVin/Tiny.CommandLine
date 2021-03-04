@@ -29,7 +29,7 @@ namespace System.TinyCommandLine.Samples
                     .HelpText("The file to save search result.")
                     .Required()
                 )
-                .Option('s', "--line-separator", out x.Separator, b => b
+                .Option('s', "line-separator", out x.Separator, b => b
                     .HelpText("The line ending symbol.")
                     .Default("\n")
                 )

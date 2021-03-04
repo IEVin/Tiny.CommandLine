@@ -47,7 +47,8 @@ namespace System.TinyCommandLine
                     var help = new HelpCollector();
                     configure(new CommandBuilder(help));
 
-                    help.Show<IHelpBuilder>(name, null);
+                    // TODO: Add feature to change help builder from config
+                    help.Show(name, new DefaultHelpBuilder(Console.Out, 30));
                     return;
                 }
 
