@@ -71,10 +71,15 @@ namespace System.TinyCommandLine.Implementation
             if (!CheckState(out value, configure))
                 return this;
 
-            if (ArgumentInternal(out value))
+            if (ArgumentInternal(out value, configure))
                 return this;
 
-            value = GetDefaultValue(configure);
+            var opState = GetOptionState(configure);
+
+            value = opState.IsRequired
+                ? SetErrorArgumentRequired(opState)
+                : opState.DefaultValue;
+
             return this;
         }
 
@@ -84,14 +89,22 @@ namespace System.TinyCommandLine.Implementation
                 return this;
 
             var list = new List<T>(_tokens.RemainingItemsCount);
-            while (ArgumentInternal(out T item))
+            while (ArgumentInternal(out T item, configure))
             {
                 list.Add(item);
             }
 
-            value = list.Count > 0
-                ? list
-                : GetDefaultValue(configure);
+            if (list.Count > 0)
+            {
+                value = list;
+                return this;
+            }
+
+            var opState = GetOptionState(configure);
+
+            value = opState.IsRequired
+                ? SetErrorArgumentRequired(opState)
+                : opState.DefaultValue;
 
             return this;
         }
@@ -113,9 +126,17 @@ namespace System.TinyCommandLine.Implementation
                 optionLength = offset;
             }
 
-            value = optionIndex >= 0
-                ? GetOptionValue<T>(optionIndex, optionLength)
-                : GetDefaultValue(configure);
+            if (optionIndex >= 0)
+            {
+                value = GetOptionValue<T>(optionIndex, optionLength);
+                return this;
+            }
+
+            var opState = GetOptionState(configure);
+
+            value = opState.IsRequired
+                ? SetErrorOptionRequired<T>(shortName, longName)
+                : opState.DefaultValue;
 
             return this;
         }
@@ -142,29 +163,44 @@ namespace System.TinyCommandLine.Implementation
                 result.Add(optionValue);
             }
 
-            value = result.Count > 0
-                ? result
-                : GetDefaultValue(configure);
+            if (result.Count > 0)
+            {
+                value = result;
+                return this;
+            }
+
+            var opState = GetOptionState(configure);
+
+            value = opState.IsRequired
+                ? SetErrorOptionRequired<IReadOnlyList<T>>(shortName, longName)
+                : opState.DefaultValue;
 
             return this;
         }
 
-        T GetDefaultValue<T>(OptionConfigurator<T> configure)
+        OptionState<T> GetOptionState<T>(OptionConfigurator<T> configure)
         {
             var optionState = new OptionState<T>();
             configure?.Invoke(new OptionBuilder<T>(optionState));
 
-            if (optionState.IsRequired)
-            {
-                // TODO: Add option name
-                SetError($"Option {null} not specified.");
-                return default;
-            }
-
-            return optionState.DefaultValue;
+            return optionState;
         }
 
-        bool ArgumentInternal<T>(out T value)
+        T SetErrorArgumentRequired<T>(OptionState<T> optionState)
+        {
+            var name = optionState.ValueName ?? "argument " + optionState.ValueName;
+            SetError("Argument {0} is not specified.", name);
+            return default;
+        }
+
+        T SetErrorOptionRequired<T>(char shortName, string longName)
+        {
+            var name = longName != null ? "--" + longName : "-" + shortName;
+            SetError("Option {0} is not specified.", name);
+            return default;
+        }
+
+        bool ArgumentInternal<T, TConf>(out T value, OptionConfigurator<TConf> configure)
         {
             int index = _tokens.GetNextIndex();
             if (index < 0)
@@ -177,11 +213,14 @@ namespace System.TinyCommandLine.Implementation
 
             var valStr = _tokens[index];
 
-            // TODO: Add option name
-            if (Converter<T>.TryParse(valStr, null, out value, out var error))
+            if (Converter<T>.TryParse(valStr, out value, out var error))
                 return true;
 
-            SetError(error);
+            var optionState = new OptionState<TConf>();
+            configure?.Invoke(new OptionBuilder<TConf>(optionState));
+
+            var name = optionState.ValueName ?? "argument";
+            SetError(error, name);
             return false;
         }
 
@@ -190,13 +229,12 @@ namespace System.TinyCommandLine.Implementation
             var token = _tokens[index];
             if (length < token.Length)
             {
-                var optionName = token.AsSpan(0, length);
                 var str = token.AsSpan(length + 1);
 
-                if (Converter<T>.TryParse(str, optionName, out var value, out var error))
+                if (Converter<T>.TryParse(str, out var value, out var error))
                     return value;
 
-                SetError(error);
+                SetError(error, token.Substring(0, length));
                 return default;
             }
 
@@ -206,20 +244,23 @@ namespace System.TinyCommandLine.Implementation
             if (index + 1 < _tokens.Count)
             {
                 var valueStr = _tokens[index + 1];
-                if (Converter<T>.TryParse(valueStr, token, out var value, out var error))
+                if (Converter<T>.TryParse(valueStr, out var value, out var error))
                     return value;
 
-                SetError(error);
+                SetError(error, valueStr);
                 return default;
             }
 
-            SetError($"Option {token} value expected.");
+            SetError("Option {0} value expected.", token);
             return default;
         }
 
-        void SetError(string reason)
+        void SetError(string reason, string paramName)
         {
-            _state.ErrReason = reason;
+            _state.ErrReason = paramName != null
+                ? string.Format(reason, paramName)
+                : reason;
+
             _state.IsFinished = true;
         }
 
@@ -231,7 +272,7 @@ namespace System.TinyCommandLine.Implementation
             if (predicate())
                 return this;
 
-            SetError(message);
+            SetError(message, null);
             return this;
         }
 
