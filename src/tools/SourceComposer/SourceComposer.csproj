@@ -1,0 +1,29 @@
+<Project>
+  <PropertyGroup>
+    <BaseIntermediateOutputPath>..\..\..\build\obj\Composer</BaseIntermediateOutputPath>
+    <OutputPath>..\..\..\build\bin\Composer\$(Configuration)</OutputPath>
+  </PropertyGroup>
+
+  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.props" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+    <AssemblyName>composer</AssemblyName>
+    <RootNamespace>Composer</RootNamespace>
+    <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" />
+
+  <PropertyGroup>
+    <Features>pdb-path-determinism</Features>
+    <PathMap>$(ProjectDir)=src\</PathMap>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\TinyCommandLine\TinyCommandLine.csproj" />
+  </ItemGroup>
+
+</Project>
