@@ -189,14 +189,14 @@ namespace System.TinyCommandLine.Implementation
         T SetErrorArgumentRequired<T>(OptionState<T> optionState)
         {
             var name = optionState.ValueName ?? "argument " + optionState.ValueName;
-            SetError("Argument {0} is not specified.", name);
+            SetError($"Argument {name} is not specified.");
             return default;
         }
 
         T SetErrorOptionRequired<T>(char shortName, string longName)
         {
             var name = longName != null ? "--" + longName : "-" + shortName;
-            SetError("Option {0} is not specified.", name);
+            SetError($"Option {name} is not specified.");
             return default;
         }
 
@@ -213,14 +213,14 @@ namespace System.TinyCommandLine.Implementation
 
             var valStr = _tokens[index];
 
-            if (Converter<T>.TryParse(valStr, out value, out var error))
+            if (Converter<T>.TryParse(valStr, out value))
                 return true;
 
             var optionState = new OptionState<TConf>();
             configure?.Invoke(new OptionBuilder<TConf>(optionState));
 
             var name = optionState.ValueName ?? "argument";
-            SetError(error, name);
+            SetParseError(name);
             return false;
         }
 
@@ -231,10 +231,10 @@ namespace System.TinyCommandLine.Implementation
             {
                 var str = token.AsSpan(length + 1);
 
-                if (Converter<T>.TryParse(str, out var value, out var error))
+                if (Converter<T>.TryParse(str, out var value))
                     return value;
 
-                SetError(error, token.Substring(0, length));
+                SetParseError(token.Substring(0, length));
                 return default;
             }
 
@@ -244,23 +244,22 @@ namespace System.TinyCommandLine.Implementation
             if (index + 1 < _tokens.Count)
             {
                 var valueStr = _tokens[index + 1];
-                if (Converter<T>.TryParse(valueStr, out var value, out var error))
+                if (Converter<T>.TryParse(valueStr, out var value))
                     return value;
 
-                SetError(error, valueStr);
+                SetParseError(valueStr);
                 return default;
             }
 
-            SetError("Option {0} value expected.", token);
+            SetError($"Option {token} value expected.");
             return default;
         }
 
-        void SetError(string reason, string paramName)
-        {
-            _state.ErrReason = paramName != null
-                ? string.Format(reason, paramName)
-                : reason;
+        void SetParseError(string optionName) => SetError($"Option {optionName} can't be parsed.");
 
+        void SetError(string reason)
+        {
+             _state.ErrReason = reason;
             _state.IsFinished = true;
         }
 
@@ -272,7 +271,7 @@ namespace System.TinyCommandLine.Implementation
             if (predicate())
                 return this;
 
-            SetError(message, null);
+            SetError(message);
             return this;
         }
 

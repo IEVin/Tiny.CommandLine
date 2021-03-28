@@ -47,18 +47,14 @@ namespace System.TinyCommandLine.Tests
         [TestCase("--value")]
         public void Flag_should_be_parsed_as_bool(string cmd) => Assert.IsTrue(ParseOption<bool>(cmd));
 
-        [TestCase("-v=1")]
         [TestCase("-v=true")]
         [TestCase("-v=True")]
-        [TestCase("--value=1")]
         [TestCase("--value=true")]
         [TestCase("--value=True")]
         public void True_should_be_parsed_as_bool(string cmd) => Assert.IsTrue(ParseOption<bool>(cmd));
 
-        [TestCase("-v=0")]
         [TestCase("-v=false")]
         [TestCase("-v=False")]
-        [TestCase("--value=0")]
         [TestCase("--value=false")]
         [TestCase("--value=False")]
         public void False_should_be_parsed_as_bool(string cmd)
