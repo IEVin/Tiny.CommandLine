@@ -4,7 +4,7 @@ namespace System.TinyCommandLine.Implementation
 {
     public interface IHelpBuilder
     {
-        void Show(string helpText, List<CommandDesc> commands, List<OptionDesc> options);
+        void Show(string name, string helpText, List<CommandDesc> commands, List<OptionDesc> options);
     }
 
     public readonly struct CommandDesc

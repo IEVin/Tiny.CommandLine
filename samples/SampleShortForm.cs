@@ -10,7 +10,7 @@ namespace System.TinyCommandLine.Samples
         //  grep.exe -e "some text" --o "../new output.txt" --ignore-case
         //  grep.exe -e "[\W\w]{5,}" --regexp
         public static void EntryPoint(string[] args) =>
-            CommandLineParser.Run(args, s => s
+            CommandLineParser.Run("grep", args, s => s
                 .HelpText("Simple utility for searching text for lines that match a regular expression.")
                 .Option('i', "input", out string input, "The file to search in.")
                 .Option('o', "output", out string output, "The file to save search result.")

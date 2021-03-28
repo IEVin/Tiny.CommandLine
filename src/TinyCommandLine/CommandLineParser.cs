@@ -31,7 +31,7 @@ namespace System.TinyCommandLine
 {
     public static class CommandLineParser
     {
-        public static void Run(string[] args, CommandConfigurator configure)
+        public static void Run(string name, string[] args, CommandConfigurator configure)
         {
             var tokens = TokenCollection.Tokenize(args);
             var state = new State();
@@ -47,7 +47,7 @@ namespace System.TinyCommandLine
                     var help = new HelpCollector();
                     configure(new CommandBuilder(help));
 
-                    help.Show<IHelpBuilder>(null);
+                    help.Show<IHelpBuilder>(name, null);
                     return;
                 }
 

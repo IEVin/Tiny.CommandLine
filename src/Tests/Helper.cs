@@ -8,7 +8,7 @@ namespace System.TinyCommandLine.Tests
         public static void Run(string cmd, Implementation.CommandConfigurator configure)
         {
             var args = SplitArguments(cmd);
-            CommandLineParser.Run(args, configure);
+            CommandLineParser.Run("test", args, configure);
         }
 
         static string[] SplitArguments(string commandline)

@@ -28,7 +28,7 @@ namespace System.TinyCommandLine.Implementation
             _options.Add(new OptionDesc(shortName, longName, state.ValueName, state.HelpText, state.IsRequired));
         }
 
-        public void Show<T>(T helpBuilder) where T : IHelpBuilder
-            => helpBuilder?.Show(_helpText, _commands, _options);
+        public void Show<T>(string name, T helpBuilder) where T : IHelpBuilder
+            => helpBuilder?.Show(name, _helpText, _commands, _options);
     }
 }

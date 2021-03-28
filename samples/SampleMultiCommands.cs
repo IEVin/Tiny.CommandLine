@@ -9,7 +9,7 @@ namespace System.TinyCommandLine.Samples
         //  calc.exe sub 5 3
         //  calc.exe eval "sqrt((2+2)*2)"
         public static void EntryPoint(string[] args) =>
-            CommandLineParser.Run(args, syntax => syntax
+            CommandLineParser.Run("calc", args, syntax => syntax
                 .Command("add", builder => builder
                     .Argument(out double num1, b => b.Required())
                     .Argument(out double num2, b => b.Required())
