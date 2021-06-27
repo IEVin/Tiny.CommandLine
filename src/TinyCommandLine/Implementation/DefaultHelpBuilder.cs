@@ -99,6 +99,8 @@ namespace System.TinyCommandLine.Implementation
             {
                 PrintValue(desc.Name, desc.HelpText, 2);
             }
+
+            Console.WriteLine();
         }
 
         void ShowOptions(List<OptionDesc> options)
@@ -110,7 +112,12 @@ namespace System.TinyCommandLine.Implementation
             foreach (var desc in options)
             {
                 if (desc.IsArgument)
+                {
+                    if (argumentNum == 0)
+                        _writer.WriteLine();
+
                     argumentNum++;
+                }
 
                 string name = GetOptionName(desc, argumentNum, false);
                 PrintValue(name, desc.HelpText, 4);
@@ -174,7 +181,7 @@ namespace System.TinyCommandLine.Implementation
                 return;
             }
 
-            var currentAlign = _alignSize - name.Length - intendBetweenNameAndText;
+            var currentAlign = _alignSize - intend - name.Length - intendBetweenNameAndText;
             if (currentAlign <= 0)
             {
                 _writer.WriteLine();
