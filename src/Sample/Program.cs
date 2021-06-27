@@ -65,7 +65,7 @@ CommandLineParser.Run("sample", args, syntax => syntax
 static void ShowVersion(bool verbose)
 {
     if (verbose)
-        Console.Write("sample version");
+        Console.Write("sample version ");
     Console.WriteLine("0.0.1");
 }
 
