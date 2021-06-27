@@ -29,7 +29,7 @@ namespace System.TinyCommandLine.Implementation
             _collectHelpText = false;
         }
 
-        public void AddOption<T>(char shortName, string longName, OptionConfigurator<T> configure)
+        public void AddOption<T>(char shortName, string longName, OptionConfigurator<T> configure, bool isList)
         {
             if(_collectHelpText)
                 return;
@@ -40,10 +40,10 @@ namespace System.TinyCommandLine.Implementation
             if (state.IsHidden)
                 return;
 
-            bool isFlag = typeof(bool) == typeof(T);
+            bool isFlag = typeof(T) == typeof(bool);
 
             _options ??= new List<OptionDesc>();
-            _options.Add(new OptionDesc(shortName, longName, state.ValueName, isFlag, state.HelpText, state.IsRequired));
+            _options.Add(new OptionDesc(shortName, longName, state.ValueName, state.HelpText, state.IsRequired, isFlag, isList));
         }
 
         public void Show<T>(string name, List<string> commandParts, T helpBuilder) where T : IHelpBuilder

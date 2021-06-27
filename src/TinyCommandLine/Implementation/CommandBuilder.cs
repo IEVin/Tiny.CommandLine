@@ -32,12 +32,12 @@ namespace System.TinyCommandLine.Implementation
             _state = state;
         }
 
-        bool CheckState<T>(out T valueDefault, OptionConfigurator<T> configure, char shortName='\0', string longName = null)
+        bool CheckState<T>(out T valueDefault, OptionConfigurator<T> configure, bool isList, char shortName='\0', string longName = null)
         {
             valueDefault = default;
             if (_help != null)
             {
-                _help.AddOption(shortName, longName, configure);
+                _help.AddOption(shortName, longName, configure, isList);
                 return false;
             }
 
@@ -75,7 +75,7 @@ namespace System.TinyCommandLine.Implementation
         {
             CheckIsHelpRequired();
 
-            if (!CheckState(out value, configure))
+            if (!CheckState(out value, configure, false))
                 return this;
 
             if (ArgumentInternal(out value, configure))
@@ -94,7 +94,7 @@ namespace System.TinyCommandLine.Implementation
         {
             CheckIsHelpRequired();
 
-            if (!CheckState(out value, configure))
+            if (!CheckState(out value, configure, true))
                 return this;
 
             var list = new List<T>(_tokens.RemainingItemsCount);
@@ -120,7 +120,7 @@ namespace System.TinyCommandLine.Implementation
 
         public CommandBuilder Option<T>(char shortName, string longName, out T value, OptionConfigurator<T> configure = null)
         {
-            if (!CheckState(out value, configure, shortName, longName))
+            if (!CheckState(out value, configure, false, shortName, longName))
                 return this;
 
             bool isFlag = typeof(T) == typeof(bool);
@@ -152,7 +152,7 @@ namespace System.TinyCommandLine.Implementation
 
         public CommandBuilder OptionList<T>(char shortName, string longName, out IReadOnlyList<T> value, OptionConfigurator<IReadOnlyList<T>> configure = null)
         {
-            if (!CheckState(out value, configure, shortName, longName))
+            if (!CheckState(out value, configure, true, shortName, longName))
                 return this;
 
             bool isFlag = typeof(T) == typeof(bool);

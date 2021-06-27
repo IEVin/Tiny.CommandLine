@@ -28,15 +28,17 @@ namespace System.TinyCommandLine.Implementation
         public readonly bool IsRequired;
         public readonly bool IsArgument;
         public readonly bool IsFlag;
+        public readonly bool IsList;
 
-        public OptionDesc(char shortName, string longName, string valueName, bool isFlag, string helpText, bool isRequired)
+        public OptionDesc(char shortName, string longName, string valueName, string helpText, bool isRequired, bool isFlag, bool isList)
         {
             ShortName = shortName;
             LongName = longName;
             ValueName = valueName;
             HelpText = helpText;
-            IsFlag = isFlag;
             IsRequired = isRequired;
+            IsFlag = isFlag;
+            IsList = isList;
             IsArgument = longName == null && shortName == '\0';
         }
     }

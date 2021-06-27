@@ -135,6 +135,10 @@ namespace System.TinyCommandLine.Implementation
             {
                 var argument = desc.ValueName ?? "argument" + argumentNum;
                 sb.Append(argument);
+
+                if (desc.IsList)
+                    sb.Append("...");
+
                 return sb.ToString();
             }
 
@@ -161,6 +165,10 @@ namespace System.TinyCommandLine.Implementation
                     var value = desc.ValueName ?? "value";
                     sb.Append(" <");
                     sb.Append(value);
+
+                    if (desc.IsList)
+                        sb.Append("...");
+
                     sb.Append('>');
                 }
             }
