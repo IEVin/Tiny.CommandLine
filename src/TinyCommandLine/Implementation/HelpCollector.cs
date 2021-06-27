@@ -17,12 +17,16 @@ namespace System.TinyCommandLine.Implementation
                 return;
 
             _collectHelpText = true;
+            var currentHelpText = _helpText;
             _helpText = null;
+
             configure?.Invoke(new CommandBuilder(this));
-            _collectHelpText = false;
 
             _commands ??= new List<CommandDesc>();
             _commands.Add(new CommandDesc(name, _helpText));
+
+            _helpText = currentHelpText;
+            _collectHelpText = false;
         }
 
         public void AddOption<T>(char shortName, string longName, OptionConfigurator<T> configure)
