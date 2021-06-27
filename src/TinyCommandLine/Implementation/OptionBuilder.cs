@@ -12,36 +12,17 @@ namespace System.TinyCommandLine.Implementation
     public readonly ref struct OptionBuilder<T>
     {
         readonly OptionState<T> _state;
-
         internal OptionBuilder(OptionState<T> state) => _state = state;
 
-        public OptionBuilder<T> ValueName(string name)
-        {
-            _state.ValueName = name;
-            return this;
-        }
+        public OptionBuilder<T> ValueName(string name) => Set(out _state.ValueName, name);
+        public OptionBuilder<T> HelpText(string text) => Set(out _state.HelpText, text);
+        public OptionBuilder<T> Hidden() => Set(out _state.IsHidden, true);
+        public OptionBuilder<T> Default(T value) => Set(out _state.DefaultValue, value);
+        public OptionBuilder<T> Required() => Set(out _state.IsRequired, true);
 
-        public OptionBuilder<T> HelpText(string text)
+        OptionBuilder<T> Set<TValue>(out TValue field, TValue value)
         {
-            _state.HelpText = text;
-            return this;
-        }
-
-        public OptionBuilder<T> Hidden()
-        {
-            _state.IsHidden = true;
-            return this;
-        }
-
-        public OptionBuilder<T> Default(T value)
-        {
-            _state.DefaultValue = value;
-            return this;
-        }
-
-        public OptionBuilder<T> Required()
-        {
-            _state.IsRequired = true;
+            field = value;
             return this;
         }
     }
