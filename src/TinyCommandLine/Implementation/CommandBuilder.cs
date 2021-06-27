@@ -210,7 +210,7 @@ namespace System.TinyCommandLine.Implementation
 
         T SetErrorArgumentRequired<T>(OptionState<T> optionState)
         {
-            var name = optionState.ValueName ?? "argument " + optionState.ValueName;
+            var name = optionState.ValueName ?? "argument";
             SetError($"Argument {name} is not specified.");
             return default;
         }

@@ -115,8 +115,6 @@ namespace System.TinyCommandLine.Implementation
                 string name = GetOptionName(desc, argumentNum, false);
                 PrintValue(name, desc.HelpText, 4);
             }
-
-            _writer.WriteLine();
         }
 
         string GetOptionName(OptionDesc desc, int argumentNum, bool shortForm)
