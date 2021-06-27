@@ -22,7 +22,7 @@ namespace System.TinyCommandLine.Implementation
             Array.Fill(_align, ' ');
         }
 
-        public void Show(string name, string helpText, List<CommandDesc> commands, List<OptionDesc> options)
+        public void Show(string name, string helpText, List<string> commandParts, List<CommandDesc> commands, List<OptionDesc> options)
         {
             if (helpText != null)
             {
@@ -30,20 +30,26 @@ namespace System.TinyCommandLine.Implementation
                 _writer.WriteLine();
             }
 
-            ShowSyntax(name, commands, options);
+            ShowSyntax(name, commandParts, commands, options);
 
             ShowCommands(commands);
 
             ShowOptions(options);
         }
 
-        void ShowSyntax(string fileName, List<CommandDesc> commands, List<OptionDesc> options)
+        void ShowSyntax(string fileName, List<string> commandParts, List<CommandDesc> commands, List<OptionDesc> options)
         {
             if (options == null && commands == null)
                 return;
 
             _writer.Write("Usage: ");
             _writer.Write(fileName);
+
+            foreach (var part in commandParts)
+            {
+                _writer.Write(' ');
+                _writer.Write(part);
+            }
 
             int argumentNum = 0;
             if (options != null)

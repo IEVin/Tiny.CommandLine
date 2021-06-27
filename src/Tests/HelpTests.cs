@@ -16,6 +16,19 @@ namespace System.TinyCommandLine.Tests
         }
 
         [TestCase("-h")]
+        [TestCase("--help")]
+        public void Help_after_argument_should_be_invoked(string cmd)
+        {
+            string argument = null;
+
+            Run(cmd, s => s
+                .Argument(out argument)
+            );
+
+            Assert.IsNull(argument);
+        }
+
+        [TestCase("-h")]
         public void Help_with_required_options_should_be_invoked(string cmd)
         {
             Run(cmd, s => s

@@ -42,7 +42,7 @@ namespace System.TinyCommandLine.Implementation
             _options.Add(new OptionDesc(shortName, longName, state.ValueName, isFlag, state.HelpText, state.IsRequired));
         }
 
-        public void Show<T>(string name, T helpBuilder) where T : IHelpBuilder
-            => helpBuilder.Show(name, _helpText, _commands, _options);
+        public void Show<T>(string name, List<string> commandParts, T helpBuilder) where T : IHelpBuilder
+            => helpBuilder.Show(name, _helpText, commandParts, _commands, _options);
     }
 }

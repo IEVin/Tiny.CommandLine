@@ -8,10 +8,13 @@ namespace System.TinyCommandLine.Implementation
 
     class State
     {
-        public CommandConfigurator SubCommand;
+        public string SubCommandName;
+        public CommandConfigurator SubCommandHandler;
         public Action Handler;
         public string ErrReason;
         public bool IsFinished;
+        public bool IsHelpRequired;
+        public bool IsHelpChecked;
     }
 
     public readonly ref struct CommandBuilder
@@ -59,8 +62,10 @@ namespace System.TinyCommandLine.Implementation
             if (index >= 0 && _tokens[index] == name)
             {
                 _tokens.MarkAsUsed(index);
-                _state.SubCommand = configure;
+                _state.SubCommandHandler = configure;
+                _state.SubCommandName = name;
                 _state.IsFinished = true;
+                _state.IsHelpChecked = true;
             }
 
             return this;
@@ -68,6 +73,8 @@ namespace System.TinyCommandLine.Implementation
 
         public CommandBuilder Argument<T>(out T value, OptionConfigurator<T> configure = null)
         {
+            CheckIsHelpRequired();
+
             if (!CheckState(out value, configure))
                 return this;
 
@@ -85,6 +92,8 @@ namespace System.TinyCommandLine.Implementation
 
         public CommandBuilder ArgumentList<T>(out IReadOnlyList<T> value, OptionConfigurator<IReadOnlyList<T>> configure = null)
         {
+            CheckIsHelpRequired();
+
             if (!CheckState(out value, configure))
                 return this;
 
@@ -176,6 +185,19 @@ namespace System.TinyCommandLine.Implementation
                 : opState.DefaultValue;
 
             return this;
+        }
+
+        void CheckIsHelpRequired()
+        {
+            if (_state == null || _state.IsHelpChecked)
+                return;
+
+            _state.IsHelpChecked = true;
+
+            Option('h', "help", out _state.IsHelpRequired);
+
+            if (_state.IsHelpRequired)
+                _state.IsFinished = true;
         }
 
         OptionState<T> GetOptionState<T>(OptionConfigurator<T> configure)
@@ -286,8 +308,10 @@ namespace System.TinyCommandLine.Implementation
             if(_help != null || _state.IsFinished)
                 return;
 
-            if (_state.SubCommand == null)
-                _state.Handler = handler;
+            if (_state.SubCommandHandler != null)
+                return;
+
+            _state.Handler = handler;
         }
     }
 }

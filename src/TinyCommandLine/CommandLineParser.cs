@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.TinyCommandLine.Implementation;
 
 namespace System.TinyCommandLine
@@ -9,34 +10,45 @@ namespace System.TinyCommandLine
             var tokens = TokenCollection.Tokenize(args);
             var state = new State();
 
+            var commands = new List<string>(4);
+
             while (true)
             {
                 var builder = new CommandBuilder(tokens, state);
                 configure(builder);
 
-                var index = tokens.GetNextIndex();
-                if (index >= 0 && (tokens[index] == "-h" || tokens[index] == "--help"))
+                if (!state.IsHelpChecked)
+                {
+                    state.IsFinished = false;
+                    builder.Option('h', "help", out state.IsHelpRequired);
+                }
+
+                if (state.IsHelpRequired)
                 {
                     var help = new HelpCollector();
                     configure(new CommandBuilder(help));
 
                     // TODO: Add feature to change help builder from config
-                    help.Show(name, new DefaultHelpBuilder(Console.Out, 30));
-                    return;
+                    help.Show(name, commands, new DefaultHelpBuilder(Console.Out, 30));
+                    break;
                 }
 
                 if(state.ErrReason != null)
                     break;
 
-                if (state.SubCommand != null)
+                if (state.SubCommandHandler != null)
                 {
-                    configure = state.SubCommand;
-                    state.SubCommand = null;
+                    configure = state.SubCommandHandler;
+                    commands.Add(state.SubCommandName);
+
+                    state.SubCommandHandler = null;
+                    state.SubCommandName = null;
                     state.IsFinished = false;
+                    state.IsHelpChecked = false;
                     continue;
                 }
 
-                index = tokens.GetNextIndex();
+                var index = tokens.GetNextIndex();
                 if (index >= 0)
                 {
                     state.ErrReason = $"Option {tokens[index]} is unknown.";
@@ -45,7 +57,7 @@ namespace System.TinyCommandLine
                 break;
             }
 
-            if (state.ErrReason != null)
+            if (state.ErrReason != null && !state.IsHelpRequired)
             {
                 ShowError(state.ErrReason);
                 return;
