@@ -30,7 +30,7 @@ namespace System.TinyCommandLine
 
                     // TODO: Add feature to change help builder from config
                     help.Show(name, commands, new DefaultHelpBuilder(Console.Out, 30));
-                    break;
+                    return;
                 }
 
                 if(state.ErrReason != null)
@@ -57,7 +57,7 @@ namespace System.TinyCommandLine
                 break;
             }
 
-            if (state.ErrReason != null && !state.IsHelpRequired)
+            if (state.ErrReason != null)
             {
                 ShowError(state.ErrReason);
                 return;
