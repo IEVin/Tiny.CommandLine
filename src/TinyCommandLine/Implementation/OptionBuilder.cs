@@ -1,4 +1,4 @@
-namespace System.TinyCommandLine.Implementation
+namespace Tiny.CommandLine.Implementation
 {
     class OptionState<T>
     {

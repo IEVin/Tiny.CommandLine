@@ -9,7 +9,8 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <AssemblyName>TinyCommandLine</AssemblyName>
+    <AssemblyName>Tiny.CommandLine</AssemblyName>
+    <RootNamespace>Tiny.CommandLine</RootNamespace>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <LangVersion>latest</LangVersion>
     <Version>0.0.1.0</Version>
@@ -20,7 +21,6 @@
   <PropertyGroup>
     <Features>pdb-path-determinism</Features>
     <PathMap>$(ProjectDir)=src\</PathMap>
-    <RootNamespace>System.TinyCommandLine</RootNamespace>
   </PropertyGroup>
 
 </Project>

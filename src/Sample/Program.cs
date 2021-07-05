@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.TinyCommandLine;
-using System.TinyCommandLine.Samples;
+using Tiny.CommandLine;
+using Tiny.CommandLine.Sample;
 
 
 CommandLineParser.Run("sample", args, syntax => syntax

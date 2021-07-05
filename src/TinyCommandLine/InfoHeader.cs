@@ -16,7 +16,7 @@
 ////////////////////////////////////////////////////////////////////////////
 //
 // Example:
-//    using System.TinyCommandLine;
+//    using Tiny.CommandLine;
 //
 //    CommandLineParser.Run("executable_file_name", args, c => c
 //        .HelpText("Description of the entire tool")

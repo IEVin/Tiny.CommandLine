@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.TinyCommandLine.Implementation;
+using Tiny.CommandLine.Implementation;
 
-namespace System.TinyCommandLine
+namespace Tiny.CommandLine
 {
     public static class Extensions
     {

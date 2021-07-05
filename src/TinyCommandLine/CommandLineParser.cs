@@ -1,7 +1,8 @@
+using System;
 using System.Collections.Generic;
-using System.TinyCommandLine.Implementation;
+using Tiny.CommandLine.Implementation;
 
-namespace System.TinyCommandLine
+namespace Tiny.CommandLine
 {
     public static class CommandLineParser
     {

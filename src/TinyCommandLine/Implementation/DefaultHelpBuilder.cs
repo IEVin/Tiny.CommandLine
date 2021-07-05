@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace System.TinyCommandLine.Implementation
+namespace Tiny.CommandLine.Implementation
 {
     readonly struct DefaultHelpBuilder : IHelpBuilder
     {

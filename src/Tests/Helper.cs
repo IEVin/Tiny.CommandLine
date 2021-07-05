@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace System.TinyCommandLine.Tests
+namespace Tiny.CommandLine.Tests
 {
     public static class Helper
     {

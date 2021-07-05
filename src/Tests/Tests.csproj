@@ -9,8 +9,8 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net5</TargetFramework>
-    <AssemblyName>TinyCommandLine.Tests</AssemblyName>
-    <RootNamespace>System.TinyCommandLine.Tests</RootNamespace>
+    <AssemblyName>Tiny.CommandLine.Tests</AssemblyName>
+    <RootNamespace>Tiny.CommandLine.Tests</RootNamespace>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>

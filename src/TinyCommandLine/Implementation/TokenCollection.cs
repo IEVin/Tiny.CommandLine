@@ -1,7 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace System.TinyCommandLine.Implementation
+namespace Tiny.CommandLine.Implementation
 {
     class TokenCollection
     {

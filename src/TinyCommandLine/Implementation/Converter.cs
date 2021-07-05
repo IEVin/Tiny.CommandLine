@@ -1,7 +1,8 @@
+using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
-namespace System.TinyCommandLine.Implementation
+namespace Tiny.CommandLine.Implementation
 {
     interface IParser<TVal> { bool TryParse(ReadOnlySpan<char> str, out TVal value); }
 

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace System.TinyCommandLine.Implementation
+namespace Tiny.CommandLine.Implementation
 {
     public interface IHelpBuilder
     {

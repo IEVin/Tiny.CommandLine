@@ -1,6 +1,7 @@
-using System.TinyCommandLine.Implementation;
+using System;
+using Tiny.CommandLine.Implementation;
 
-namespace System.TinyCommandLine.Samples
+namespace Tiny.CommandLine.Sample
 {
     public class TestCommand
     {

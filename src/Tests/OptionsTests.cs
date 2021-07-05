@@ -1,8 +1,9 @@
+using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using static System.TinyCommandLine.Tests.Helper;
+using static Tiny.CommandLine.Tests.Helper;
 
-namespace System.TinyCommandLine.Tests
+namespace Tiny.CommandLine.Tests
 {
     [TestFixture]
     public class OptionsTests
