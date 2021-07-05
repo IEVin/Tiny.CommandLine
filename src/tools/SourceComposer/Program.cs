@@ -1,10 +1,12 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using Tiny.CommandLine;
 
+const int maxNestedNameSpaceLevel = 10;
 const int emptyLinesCountBetweenFiles = 1;
 const string whitespaces = "\t ";
 
@@ -12,6 +14,10 @@ CommandLineParser.Run("compose", args, b => b
     .Option('o', "output", out string output, "Path to output file with combined sources")
     .Option('f', "force", out bool force, "Force override output file if exist")
     .Option("header", out string header, "Path to file with usage and license header")
+    .Option("intend", out string intend, s => s
+        .HelpText("Characters that will be used as indentation")
+        .Default("    ")
+    )
     .Argument(out string input, s => s
         .HelpText("Path to directory with sources")
         .ValueName("path")
@@ -20,10 +26,10 @@ CommandLineParser.Run("compose", args, b => b
     .Check(() => Directory.Exists(input), $"Directory '{input}' is not found")
     .Check(() => header == null || File.Exists(header), $"Header file '{header}' is not found")
     .Check(() => output == null || force || !File.Exists(output), $"Output file '{output}' is already exist")
-    .Handler(() => ComposeHandler(input, output, header)));
+    .Handler(() => ComposeHandler(input, output, header, intend)));
 
 
-static void ComposeHandler(string input, string output, string header)
+static void ComposeHandler(string input, string output, string header, string intend)
 {
     var usingList = new HashSet<string>();
     var sourcesDict = new Dictionary<string, List<string>>();
@@ -31,43 +37,45 @@ static void ComposeHandler(string input, string output, string header)
     var sources = Directory.GetFiles(input, "*.cs", SearchOption.AllDirectories);
     foreach (var path in sources)
     {
-        ParseSourceFile(path, out var @namespace, out var content, usingList);
+        ParseSourceFile(path, out var nsName, out var content, usingList);
 
         if (content.Count == 0)
             continue;
 
         // Group sources by namespaces
-        List<string> sourcesByNS;
-        if (!sourcesDict.TryGetValue(@namespace, out sourcesByNS))
-        {
-            sourcesByNS = new();
-            sourcesDict.Add(@namespace, sourcesByNS);
-        }
-
-        sourcesByNS.Capacity += content.Count + emptyLinesCountBetweenFiles;
+        var sourcesByNs = GetValueOrAddDefault(sourcesDict, nsName);
+        sourcesByNs.Capacity += content.Count + emptyLinesCountBetweenFiles;
 
         // Add some empty lines between sources from different files
-        int emptyLinesCount = sourcesByNS.Count > 0 ? emptyLinesCountBetweenFiles : 0;
+        int emptyLinesCount = sourcesByNs.Count > 0 ? emptyLinesCountBetweenFiles : 0;
         while (emptyLinesCount-- > 0)
         {
-            sourcesByNS.Add(string.Empty);
+            sourcesByNs.Add(string.Empty);
         }
 
         // add content
-        sourcesByNS.AddRange(content);
+        sourcesByNs.AddRange(content);
     }
 
     var headerContent = header != null
         ? File.ReadLines(header)
         : null;
 
-    SaveCombinedContent(output, headerContent, usingList, sourcesDict);
+    SaveCombinedContent(output, headerContent, usingList, sourcesDict, intend);
 }
 
-static void ParseSourceFile(string path, out string @namespace, out List<string> content, HashSet<string> usingList)
+static TValue GetValueOrAddDefault<TKey, TValue>(Dictionary<TKey, TValue> dict, TKey key)
+    where TValue : new()
+{
+    return dict.TryGetValue(key, out var value)
+        ? value
+        : dict[key] = new TValue();
+}
+
+static void ParseSourceFile(string path, out string nsName, out List<string> content, HashSet<string> usingList)
 {
     content = new List<string>();
-    @namespace = string.Empty;
+    nsName = string.Empty;
 
     bool isFirstLine = true;
     bool inNamespace = false;
@@ -106,7 +114,7 @@ static void ParseSourceFile(string path, out string @namespace, out List<string>
         {
             if (trimmed.StartsWith("namespace"))
             {
-                @namespace = trimmed
+                nsName = trimmed
                     .Slice("namespace".Length)
                     .Trim(whitespaces)
                     .ToString();
@@ -157,7 +165,7 @@ static int GetIndexOfToken(string line, string value)
     return -1;
 }
 
-static void SaveCombinedContent(string path, IEnumerable<string> headerContent, HashSet<string> usingList, Dictionary<string, List<string>> sourcesDict)
+static void SaveCombinedContent(string path, IEnumerable<string> headerContent, HashSet<string> usingList, Dictionary<string, List<string>> sourcesDict, ReadOnlySpan<char> intend)
 {
     using var stream = path != null
         ? File.Create(path)
@@ -183,20 +191,60 @@ static void SaveCombinedContent(string path, IEnumerable<string> headerContent, 
         output.WriteLine($"using {token};");
     }
 
-    // namespaces with content
-    var orderedSources = sourcesDict.OrderBy(x => x.Key);
-    foreach (var @namespace in orderedSources)
+    using var owner = MemoryPool<char>.Shared.Rent(intend.Length * 10);
+    var buffer = owner.Memory.Span;
+    for (int i = 0; i < maxNestedNameSpaceLevel; i++)
     {
+        intend.CopyTo(buffer.Slice(i * intend.Length));
+    }
+
+    var nestedNs = new Stack<string>();
+
+    var orderedSources = sourcesDict.OrderBy(x => x.Key);
+    foreach (var item in orderedSources)
+    {
+        var ns = item.Key;
+
+        while (nestedNs.TryPeek(out var parentNs))
+        {
+            if (ns.Length > parentNs.Length && ns[parentNs.Length] == '.' && ns.StartsWith(parentNs))
+            {
+                ns = ns.Substring(parentNs.Length + 1);
+                break;
+            }
+
+            output.Write(buffer.Slice(0, nestedNs.Count * intend.Length));
+            output.WriteLine('}');
+            nestedNs.Pop();
+        }
+
+        var currentIntend = buffer.Slice(0, nestedNs.Count * intend.Length);
+
         output.WriteLine();
         output.WriteLine();
-        output.WriteLine($"namespace {@namespace.Key}");
+
+        output.Write(currentIntend);
+        output.WriteLine($"namespace {ns}");
+
+        output.Write(currentIntend);
         output.WriteLine('{');
 
-        foreach (var content in @namespace.Value)
+        foreach (var content in item.Value)
         {
+            if(content.Length > 0)
+                output.Write(currentIntend);
+
             output.WriteLine(content);
         }
 
+        nestedNs.Push(item.Key);
+    }
+
+    for (int i = nestedNs.Count - 1; i >= 0; i--)
+    {
+        output.Write(buffer.Slice(0, i * intend.Length));
         output.WriteLine('}');
     }
+
+    output.Flush();
 }
