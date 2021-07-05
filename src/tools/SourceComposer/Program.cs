@@ -8,7 +8,7 @@ using Tiny.CommandLine;
 const int emptyLinesCountBetweenFiles = 1;
 const string whitespaces = "\t ";
 
-CommandLineParser.Run("SourceComposer", args, b => b
+CommandLineParser.Run("compose", args, b => b
     .Option('o', "output", out string output, "Path to output file with combined sources")
     .Option('f', "force", out bool force, "Force override output file if exist")
     .Option("header", out string header, "Path to file with usage and license header")

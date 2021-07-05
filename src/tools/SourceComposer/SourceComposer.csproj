@@ -9,7 +9,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
-    <AssemblyName>composer</AssemblyName>
+    <AssemblyName>compose</AssemblyName>
     <RootNamespace>Composer</RootNamespace>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <LangVersion>latest</LangVersion>
