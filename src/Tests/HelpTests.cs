@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using static Tiny.CommandLine.Tests.Helper;
 
 namespace Tiny.CommandLine.Tests

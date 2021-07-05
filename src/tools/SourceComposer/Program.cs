@@ -130,7 +130,7 @@ namespace Composer
                 content.Add(span.ToString());
             }
 
-            if(content.Count == 0)
+            if (content.Count == 0)
                 return;
 
             // remove trailing empty lines and last line (assume that it is '}')

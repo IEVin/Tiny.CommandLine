@@ -33,7 +33,7 @@ namespace Tiny.CommandLine.Implementation
             _state = state;
         }
 
-        bool CheckState<T>(out T valueDefault, OptionConfigurator<T> configure, bool isList, char shortName='\0', string longName = null)
+        bool CheckState<T>(out T valueDefault, OptionConfigurator<T> configure, bool isList, char shortName = '\0', string longName = null)
         {
             valueDefault = default;
             if (_help != null)
@@ -282,7 +282,7 @@ namespace Tiny.CommandLine.Implementation
 
         void SetError(string reason)
         {
-             _state.ErrReason = reason;
+            _state.ErrReason = reason;
             _state.IsFinished = true;
         }
 
@@ -306,7 +306,7 @@ namespace Tiny.CommandLine.Implementation
 
         public void Handler(Action handler)
         {
-            if(_help != null || _state.IsFinished)
+            if (_help != null || _state.IsFinished)
                 return;
 
             if (_state.SubCommandHandler != null)

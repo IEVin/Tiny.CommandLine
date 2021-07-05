@@ -13,7 +13,7 @@ namespace Tiny.CommandLine.Implementation
 
         public void AddCommand(string name, CommandConfigurator configure)
         {
-            if(_collectHelpText)
+            if (_collectHelpText)
                 return;
 
             _collectHelpText = true;
@@ -31,7 +31,7 @@ namespace Tiny.CommandLine.Implementation
 
         public void AddOption<T>(char shortName, string longName, OptionConfigurator<T> configure, bool isList)
         {
-            if(_collectHelpText)
+            if (_collectHelpText)
                 return;
 
             var state = new OptionState<T>();

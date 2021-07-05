@@ -34,7 +34,7 @@ namespace Tiny.CommandLine
                     return;
                 }
 
-                if(state.ErrReason != null)
+                if (state.ErrReason != null)
                     break;
 
                 if (state.SubCommandHandler != null)
