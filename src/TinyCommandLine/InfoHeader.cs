@@ -18,30 +18,26 @@
 // Example:
 //    using System.TinyCommandLine;
 //
-//    class Program
-//    {
-//        static void Main(string[] args)
-//            => CommandLineParser.Run("executable_file_name", args, c => c
-//                .HelpText("Description of the entire tool")
-//                .Option('o', "option_name", out string option1, s => s
-//                    .Required()
-//                    .HelpText("What does this option do")
-//                    .ValueName("value")
-//                )
-//                .Command("sub_command", c1 => c1
-//                    .HelpText("Description of this subcommand")
-//                    // ...
-//                    .Handler(() => { /* sub_command handler definition */ })
-//                )
-//                .Argument(out string argument1, "Why is this argument needed")
-//                .Check(() => argument1 != option1, "Some check of arguments or options")
-//                .Handler(() => CommandHandler(option1, argument1))
-//            );
-//
-//        static void CommandHandler(string option1, string argument1)
-//        {
+//    CommandLineParser.Run("executable_file_name", args, c => c
+//        .HelpText("Description of the entire tool")
+//        .Command("sub_command", c1 => c1
+//            .HelpText("Description of this subcommand")
 //            // ...
-//        }
+//            .Handler(() => { /* sub_command handler definition */ })
+//        )
+//        .Option('o', "option_name", out string option1, s => s
+//            .Required()
+//            .HelpText("What does this option do")
+//            .ValueName("value")
+//        )
+//        .Argument(out string argument1, "Why is this argument needed")
+//        .Check(() => argument1 != null, "The argument1 must be not null")
+//        .Handler(() => CommandHandler(option1, argument1))
+//    );
+//
+//    static void CommandHandler(string option1, string argument1)
+//    {
+//        // ...
 //    }
 //
 ////////////////////////////////////////////////////////////////////////////
