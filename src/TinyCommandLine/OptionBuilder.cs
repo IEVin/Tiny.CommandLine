@@ -1,14 +1,7 @@
-namespace Tiny.CommandLine.Implementation
-{
-    class OptionState<T>
-    {
-        public string ValueName;
-        public string HelpText;
-        public T DefaultValue;
-        public bool IsRequired;
-        public bool IsHidden;
-    }
+using Tiny.CommandLine.Implementation;
 
+namespace Tiny.CommandLine
+{
     public readonly ref struct OptionBuilder<T>
     {
         readonly OptionState<T> _state;

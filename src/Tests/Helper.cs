@@ -5,7 +5,7 @@ namespace Tiny.CommandLine.Tests
 {
     public static class Helper
     {
-        public static void Run(string cmd, Implementation.CommandConfigurator configure)
+        public static void Run(string cmd, CommandConfigurator configure)
         {
             var args = SplitArguments(cmd);
             CommandLineParser.Run("test", args, configure);

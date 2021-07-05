@@ -1,5 +1,4 @@
 using System;
-using Tiny.CommandLine.Implementation;
 
 namespace Tiny.CommandLine.Sample
 {

@@ -6,8 +6,8 @@ namespace Tiny.CommandLine
 {
     public static class Extensions
     {
-        const string NoLongName = null;
-        const char NoShortName = '\0';
+        const char NoShortName = Parser.NoShortName;
+        const string NoLongName = Parser.NoLongName;
 
         public static CommandBuilder Variable<T>(this CommandBuilder builder, out T variable, T defaultValue = default)
         {

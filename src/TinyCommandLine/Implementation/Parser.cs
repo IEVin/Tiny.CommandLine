@@ -3,61 +3,45 @@ using System.Collections.Generic;
 
 namespace Tiny.CommandLine.Implementation
 {
-    public delegate void CommandConfigurator(CommandBuilder builder);
-
-    public delegate void OptionConfigurator<T>(OptionBuilder<T> builder);
-
-    class State
+    readonly ref struct Parser
     {
-        public string SubCommandName;
-        public CommandConfigurator SubCommandHandler;
-        public Action Handler;
-        public string ErrReason;
-        public bool IsFinished;
-        public bool IsHelpRequired;
-        public bool IsHelpChecked;
-    }
+        public const char NoShortName = '\0';
+        public const string NoLongName = null;
 
-    public readonly ref struct CommandBuilder
-    {
-        readonly TokenCollection _tokens;
         readonly HelpCollector _help;
-        readonly State _state;
+        readonly TokenCollection _tokens;
+        readonly CommandState _state;
 
-        internal CommandBuilder(HelpCollector help) : this(null, null) => _help = help;
+        internal Parser(HelpCollector help) : this(null, null) => _help = help;
 
-        internal CommandBuilder(TokenCollection tokens, State state)
+        internal Parser(TokenCollection tokens, CommandState state)
         {
             _help = null;
             _tokens = tokens;
             _state = state;
         }
 
-        bool CheckState<T>(out T valueDefault, OptionConfigurator<T> configure, bool isList, char shortName = '\0', string longName = null)
+        bool CheckState<T>(OptionConfigurator<T> configure, bool isList, char shortName, string longName)
         {
-            valueDefault = default;
             if (_help != null)
             {
                 _help.AddOption(shortName, longName, configure, isList);
                 return false;
             }
 
-            if (_state.IsFinished)
-                return false;
-
-            return true;
+            return !_state.IsFinished;
         }
 
-        public CommandBuilder Command(string name, CommandConfigurator configure)
+        public void Command(string name, CommandConfigurator configure)
         {
             if (_help != null)
             {
                 _help.AddCommand(name, configure);
-                return this;
+                return;
             }
 
             if (_state.IsFinished)
-                return this;
+                return;
 
             var index = _tokens.GetNextIndex();
             if (index >= 0 && _tokens[index] == name)
@@ -68,35 +52,31 @@ namespace Tiny.CommandLine.Implementation
                 _state.IsFinished = true;
                 _state.IsHelpChecked = true;
             }
-
-            return this;
         }
 
-        public CommandBuilder Argument<T>(out T value, OptionConfigurator<T> configure = null)
+        public T Argument<T>(OptionConfigurator<T> configure)
         {
             CheckIsHelpRequired();
 
-            if (!CheckState(out value, configure, false))
-                return this;
+            if (!CheckState(configure, false, NoShortName, NoLongName))
+                return default;
 
-            if (ArgumentInternal(out value, configure))
-                return this;
+            if (ArgumentInternal(out T value, configure))
+                return value;
 
             var opState = GetOptionState(configure);
 
-            value = opState.IsRequired
+            return opState.IsRequired
                 ? SetErrorArgumentRequired(opState)
                 : opState.DefaultValue;
-
-            return this;
         }
 
-        public CommandBuilder ArgumentList<T>(out IReadOnlyList<T> value, OptionConfigurator<IReadOnlyList<T>> configure = null)
+        public IReadOnlyList<T> ArgumentList<T>(OptionConfigurator<IReadOnlyList<T>> configure)
         {
             CheckIsHelpRequired();
 
-            if (!CheckState(out value, configure, true))
-                return this;
+            if (!CheckState(configure, true, NoShortName, NoLongName))
+                return default;
 
             var list = new List<T>(_tokens.RemainingItemsCount);
             while (ArgumentInternal(out T item, configure))
@@ -105,24 +85,19 @@ namespace Tiny.CommandLine.Implementation
             }
 
             if (list.Count > 0)
-            {
-                value = list;
-                return this;
-            }
+                return list;
 
             var opState = GetOptionState(configure);
 
-            value = opState.IsRequired
+            return opState.IsRequired
                 ? SetErrorArgumentRequired(opState)
                 : opState.DefaultValue;
-
-            return this;
         }
 
-        public CommandBuilder Option<T>(char shortName, string longName, out T value, OptionConfigurator<T> configure = null)
+        public T Option<T>(char shortName, string longName, OptionConfigurator<T> configure)
         {
-            if (!CheckState(out value, configure, false, shortName, longName))
-                return this;
+            if (!CheckState(configure, false, shortName, longName))
+                return default;
 
             bool isFlag = typeof(T) == typeof(bool);
             var itr = _tokens.IterateOptions(shortName, longName, isFlag);
@@ -137,24 +112,19 @@ namespace Tiny.CommandLine.Implementation
             }
 
             if (optionIndex >= 0)
-            {
-                value = GetOptionValue<T>(optionIndex, optionLength);
-                return this;
-            }
+                return GetOptionValue<T>(optionIndex, optionLength);
 
             var opState = GetOptionState(configure);
 
-            value = opState.IsRequired
+            return opState.IsRequired
                 ? SetErrorOptionRequired<T>(shortName, longName)
                 : opState.DefaultValue;
-
-            return this;
         }
 
-        public CommandBuilder OptionList<T>(char shortName, string longName, out IReadOnlyList<T> value, OptionConfigurator<IReadOnlyList<T>> configure = null)
+        public IReadOnlyList<T> OptionList<T>(char shortName, string longName, OptionConfigurator<IReadOnlyList<T>> configure)
         {
-            if (!CheckState(out value, configure, true, shortName, longName))
-                return this;
+            if (!CheckState(configure, true, shortName, longName))
+                return default;
 
             bool isFlag = typeof(T) == typeof(bool);
 
@@ -165,37 +135,29 @@ namespace Tiny.CommandLine.Implementation
             {
                 var optionValue = GetOptionValue<T>(index, length);
                 if (_state.IsFinished)
-                {
-                    value = default;
-                    return this;
-                }
+                    return default;
 
                 result.Add(optionValue);
             }
 
             if (result.Count > 0)
-            {
-                value = result;
-                return this;
-            }
+                return result;
 
             var opState = GetOptionState(configure);
 
-            value = opState.IsRequired
+            return opState.IsRequired
                 ? SetErrorOptionRequired<IReadOnlyList<T>>(shortName, longName)
                 : opState.DefaultValue;
-
-            return this;
         }
 
-        void CheckIsHelpRequired()
+
+        public void CheckIsHelpRequired()
         {
             if (_state == null || _state.IsHelpChecked)
                 return;
 
+            _state.IsHelpRequired = Option<bool>('h', "help", null);
             _state.IsHelpChecked = true;
-
-            Option('h', "help", out _state.IsHelpRequired);
 
             if (_state.IsHelpRequired)
                 _state.IsFinished = true;
@@ -286,22 +248,20 @@ namespace Tiny.CommandLine.Implementation
             _state.IsFinished = true;
         }
 
-        public CommandBuilder Check(Func<bool> predicate, string message)
+        public void Check(Func<bool> predicate, string message)
         {
             if (_help != null || _state.IsFinished)
-                return this;
+                return;
 
             if (predicate())
-                return this;
+                return;
 
             SetError(message);
-            return this;
         }
 
-        public CommandBuilder HelpText(string text)
+        public void HelpText(string text)
         {
             _help?.HelpText(text);
-            return this;
         }
 
         public void Handler(Action handler)

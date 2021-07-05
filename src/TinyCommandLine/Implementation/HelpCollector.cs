@@ -20,7 +20,7 @@ namespace Tiny.CommandLine.Implementation
             var currentHelpText = _helpText;
             _helpText = null;
 
-            configure?.Invoke(new CommandBuilder(this));
+            configure?.Invoke(new CommandBuilder(new Parser(this)));
 
             _commands ??= new List<CommandDesc>();
             _commands.Add(new CommandDesc(name, _helpText));

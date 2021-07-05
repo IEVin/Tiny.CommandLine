@@ -9,25 +9,23 @@ namespace Tiny.CommandLine
         public static void Run(string name, string[] args, CommandConfigurator configure)
         {
             var tokens = TokenCollection.Tokenize(args);
-            var state = new State();
+            var state = new CommandState();
 
             var commands = new List<string>(4);
 
             while (true)
             {
-                var builder = new CommandBuilder(tokens, state);
+                var parser = new Parser(tokens, state);
+
+                var builder = new CommandBuilder(parser);
                 configure(builder);
 
-                if (!state.IsHelpChecked)
-                {
-                    state.IsFinished = false;
-                    builder.Option('h', "help", out state.IsHelpRequired);
-                }
+                parser.CheckIsHelpRequired();
 
                 if (state.IsHelpRequired)
                 {
                     var help = new HelpCollector();
-                    configure(new CommandBuilder(help));
+                    configure(new CommandBuilder(new Parser(help)));
 
                     // TODO: Add feature to change help builder from config
                     help.Show(name, commands, new DefaultHelpBuilder(Console.Out, 30));
@@ -70,7 +68,6 @@ namespace Tiny.CommandLine
         static void ShowError(string text)
         {
             Console.WriteLine(text);
-            //throw new NotImplementedException();
         }
     }
 }
