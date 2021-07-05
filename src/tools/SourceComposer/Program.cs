@@ -160,7 +160,7 @@ static int GetIndexOfToken(string line, string value)
 static void SaveCombinedContent(string path, IEnumerable<string> headerContent, HashSet<string> usingList, Dictionary<string, List<string>> sourcesDict)
 {
     using var stream = path != null
-        ? File.OpenWrite(path)
+        ? File.Create(path)
         : Console.OpenStandardOutput();
 
     var output = new StreamWriter(stream, new UTF8Encoding(false, true), 8 * 1024);
