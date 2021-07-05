@@ -4,3 +4,4 @@
 *.user
 
 /build
+/**/Properties/launchSettings.json
