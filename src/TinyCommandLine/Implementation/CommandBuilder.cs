@@ -291,7 +291,7 @@ namespace Tiny.CommandLine.Implementation
             if (_help != null || _state.IsFinished)
                 return this;
 
-            if (!predicate())
+            if (predicate())
                 return this;
 
             SetError(message);

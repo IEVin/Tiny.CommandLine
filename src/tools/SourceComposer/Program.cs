@@ -21,9 +21,9 @@ namespace Composer
                     .Required()
                     .HelpText("Path to directory with sources")
                     .ValueName("path"))
-                .Check(() => !Directory.Exists(input), $"Directory '{input}' is not found")
-                .Check(() => !File.Exists(header), $"Header file '{header}' is not found")
-                .Check(() => output != null && !force && File.Exists(output), $"Output file '{output}' is already exist")
+                .Check(() => Directory.Exists(input), $"Directory '{input}' is not found")
+                .Check(() => File.Exists(header), $"Header file '{header}' is not found")
+                .Check(() => output == null || force || !File.Exists(output), $"Output file '{output}' is already exist")
                 .Handler(() => ComposeHandler(input, output, header)));
 
         static void ComposeHandler(string input, string output, string header)
