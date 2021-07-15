@@ -44,9 +44,9 @@ namespace Tiny.CommandLine.Implementation
 
     static class Converter<T>
     {
-#pragma warning disable 649
+        #pragma warning disable 649
         public static CustomParseDelegate<T> Custom;
-#pragma warning restore 649
+        #pragma warning restore 649
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryParse(ReadOnlySpan<char> str, out T value)
