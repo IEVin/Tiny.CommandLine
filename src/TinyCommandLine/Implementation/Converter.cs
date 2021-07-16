@@ -17,7 +17,7 @@ namespace Tiny.CommandLine.Implementation
 
     struct ParserF32 : IParser<float> { public bool TryParse(ReadOnlySpan<char> str, out float value) => float.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out value); }
     struct ParserF64 : IParser<double> { public bool TryParse(ReadOnlySpan<char> str, out double value) => double.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out value); }
-    struct ParserDecimal : IParser<decimal> { public bool TryParse(ReadOnlySpan<char> str, out decimal value) => decimal.TryParse(str, out value); }
+    struct ParserDecimal : IParser<decimal> { public bool TryParse(ReadOnlySpan<char> str, out decimal value) => decimal.TryParse(str, NumberStyles.Float, CultureInfo.InvariantCulture, out value); }
 
     struct ParserBool : IParser<bool> { public bool TryParse(ReadOnlySpan<char> str, out bool value) => bool.TryParse(str, out value); }
     struct ParserDateTime : IParser<DateTime> { public bool TryParse(ReadOnlySpan<char> str, out DateTime value) => DateTime.TryParse(str, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out value); }
