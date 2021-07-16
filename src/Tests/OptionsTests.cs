@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using static Tiny.CommandLine.Tests.Helper;
@@ -17,6 +16,7 @@ namespace Tiny.CommandLine.Tests
         public void Value_can_be_separated_by_space(string cmd) => Assert.AreEqual("val", ParseOption<string>(cmd));
 
         [TestCase("-v \"value with space\"")]
+        [TestCase("-v=\"value with space\"")]
         public void Value_in_quote_should_be_parsed_correctly(string cmd) => Assert.AreEqual("value with space", ParseOption<string>(cmd));
 
         [TestCase("-v --value", ExpectedResult = "--value")]
@@ -36,13 +36,6 @@ namespace Tiny.CommandLine.Tests
         [TestCase("-v 1", ExpectedResult = '1')]
         [TestCase("--value a", ExpectedResult = 'a')]
         public char Char_should_be_parsed_correctly(string cmd) => ParseOption<char>(cmd);
-
-        [TestCase("--value 01.20.07")]
-        public void DateTime_should_be_parsed_correctly(string cmd)
-        {
-            var dt = ParseOption<DateTime>(cmd);
-            Assert.AreEqual(new DateTime(2007, 01, 20, 0, 0, 0, 0, DateTimeKind.Utc), dt);
-        }
 
         [TestCase("-v")]
         [TestCase("--value")]
