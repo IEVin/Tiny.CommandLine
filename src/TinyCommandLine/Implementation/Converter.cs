@@ -56,23 +56,23 @@ namespace Tiny.CommandLine.Implementation
 
             // main types
             if (typeof(T) == typeof(string)) return Parse<string, ParserString>(str, out value);
-            if (typeof(T) == typeof(bool)) return Parse<bool, ParserBool>(str, out value);
-            if (typeof(T) == typeof(char)) return Parse<char, ParserChar>(str, out value);
+            if (typeof(T) == typeof(bool) || typeof(T) == typeof(bool?)) return Parse<bool, ParserBool>(str, out value);
+            if (typeof(T) == typeof(char) || typeof(T) == typeof(char?)) return Parse<char, ParserChar>(str, out value);
             // numbers
-            if (typeof(T) == typeof(long)) return Parse<long, ParserI64>(str, out value);
-            if (typeof(T) == typeof(ulong)) return Parse<ulong, ParserU64>(str, out value);
-            if (typeof(T) == typeof(int)) return Parse<int, ParserI32>(str, out value);
-            if (typeof(T) == typeof(uint)) return Parse<uint, ParserU32>(str, out value);
-            if (typeof(T) == typeof(short)) return Parse<short, ParserI16>(str, out value);
-            if (typeof(T) == typeof(ushort)) return Parse<ushort, ParserU16>(str, out value);
-            if (typeof(T) == typeof(sbyte)) return Parse<sbyte, ParserI8>(str, out value);
-            if (typeof(T) == typeof(byte)) return Parse<byte, ParserU8>(str, out value);
+            if (typeof(T) == typeof(long) || typeof(T) == typeof(long?)) return Parse<long, ParserI64>(str, out value);
+            if (typeof(T) == typeof(ulong) || typeof(T) == typeof(ulong?)) return Parse<ulong, ParserU64>(str, out value);
+            if (typeof(T) == typeof(int) || typeof(T) == typeof(int?)) return Parse<int, ParserI32>(str, out value);
+            if (typeof(T) == typeof(uint) || typeof(T) == typeof(uint?)) return Parse<uint, ParserU32>(str, out value);
+            if (typeof(T) == typeof(short) || typeof(T) == typeof(short?)) return Parse<short, ParserI16>(str, out value);
+            if (typeof(T) == typeof(ushort) || typeof(T) == typeof(ushort?)) return Parse<ushort, ParserU16>(str, out value);
+            if (typeof(T) == typeof(sbyte) || typeof(T) == typeof(sbyte?)) return Parse<sbyte, ParserI8>(str, out value);
+            if (typeof(T) == typeof(byte) || typeof(T) == typeof(byte?)) return Parse<byte, ParserU8>(str, out value);
             // floats
-            if (typeof(T) == typeof(float)) return Parse<float, ParserF32>(str, out value);
-            if (typeof(T) == typeof(double)) return Parse<double, ParserF64>(str, out value);
-            if (typeof(T) == typeof(decimal)) return Parse<decimal, ParserDecimal>(str, out value);
+            if (typeof(T) == typeof(float) || typeof(T) == typeof(float?)) return Parse<float, ParserF32>(str, out value);
+            if (typeof(T) == typeof(double) || typeof(T) == typeof(double?)) return Parse<double, ParserF64>(str, out value);
+            if (typeof(T) == typeof(decimal) || typeof(T) == typeof(decimal?)) return Parse<decimal, ParserDecimal>(str, out value);
             // others
-            if (typeof(T) == typeof(DateTime)) return Parse<DateTime, ParserDateTime>(str, out value);
+            if (typeof(T) == typeof(DateTime) || typeof(T) == typeof(DateTime?)) return Parse<DateTime, ParserDateTime>(str, out value);
 
             ThrowNotSupportedType();
             value = default;
