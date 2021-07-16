@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Tiny.CommandLine.Implementation;
@@ -14,6 +15,12 @@ namespace Tiny.CommandLine
             variable = defaultValue;
             return builder;
         }
+
+        public static void HandlerAsync(this CommandBuilder builder, Func<System.Threading.Tasks.Task> handler)
+            => builder.Handler(() => handler().GetAwaiter().GetResult());
+
+        public static void HandlerAsync(this CommandBuilder builder, Func<System.Threading.Tasks.ValueTask> handler)
+            => builder.Handler(() => handler().GetAwaiter().GetResult());
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static OptionConfigurator<T> SetHelpText<T>(string text) => x => x.HelpText(text);
