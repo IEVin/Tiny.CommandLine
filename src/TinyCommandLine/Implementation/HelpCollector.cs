@@ -40,10 +40,8 @@ namespace Tiny.CommandLine.Implementation
             if (state.IsHidden)
                 return;
 
-            bool isFlag = typeof(T) == typeof(bool);
-
             _options ??= new List<OptionDesc>();
-            _options.Add(new OptionDesc(shortName, longName, state.ValueName, state.HelpText, state.IsRequired, isFlag, isList));
+            _options.Add(new OptionDesc(shortName, longName, state.ValueName, state.HelpText, state.IsRequired, Parser.IsFlag<T>(), isList));
         }
 
         public void Show<T>(string name, List<string> commandParts, T helpBuilder) where T : IHelpBuilder

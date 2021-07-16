@@ -21,6 +21,8 @@ namespace Tiny.CommandLine.Implementation
             _state = state;
         }
 
+        internal static bool IsFlag<T>() => typeof(T) == typeof(bool) || typeof(T) == typeof(bool?);
+
         bool CheckState<T>(OptionConfigurator<T> configure, bool isList, char shortName, string longName)
         {
             if (_help != null)
@@ -99,8 +101,7 @@ namespace Tiny.CommandLine.Implementation
             if (!CheckState(configure, false, shortName, longName))
                 return default;
 
-            bool isFlag = typeof(T) == typeof(bool);
-            var itr = _tokens.IterateOptions(shortName, longName, isFlag);
+            var itr = _tokens.IterateOptions(shortName, longName, IsFlag<T>());
 
             int optionIndex = int.MinValue;
             int optionLength = int.MinValue;
@@ -126,9 +127,7 @@ namespace Tiny.CommandLine.Implementation
             if (!CheckState(configure, true, shortName, longName))
                 return default;
 
-            bool isFlag = typeof(T) == typeof(bool);
-
-            var itr = _tokens.IterateOptions(shortName, longName, isFlag);
+            var itr = _tokens.IterateOptions(shortName, longName, IsFlag<T>());
 
             var result = new List<T>();
             while (itr.TryMoveNext(out var index, out var length))
@@ -223,7 +222,7 @@ namespace Tiny.CommandLine.Implementation
                 return default;
             }
 
-            if (typeof(T) == typeof(bool))
+            if (IsFlag<T>())
                 return (T) (object) true;
 
             if (index + 1 < _tokens.Count)
