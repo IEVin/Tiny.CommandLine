@@ -155,11 +155,13 @@ namespace Tiny.CommandLine.Implementation
             if (_state == null || _state.IsHelpChecked)
                 return;
 
+            var finished = _state.IsFinished;
+            _state.IsFinished = false;
+
             _state.IsHelpRequired = Option<bool>('h', "help", null);
             _state.IsHelpChecked = true;
 
-            if (_state.IsHelpRequired)
-                _state.IsFinished = true;
+            _state.IsFinished = finished || _state.IsHelpRequired;
         }
 
         OptionState<T> GetOptionState<T>(OptionConfigurator<T> configure)
