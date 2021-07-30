@@ -62,6 +62,12 @@ namespace Tiny.CommandLine
                 return;
             }
 
+            if (state.Handler == null)
+            {
+                ShowError("No command are specified.");
+                return;
+            }
+
             state.Handler?.Invoke();
         }
 
