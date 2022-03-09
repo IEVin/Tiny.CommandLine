@@ -16,7 +16,8 @@ namespace Tiny.CommandLine.Tests
             var list = new List<string>();
 
             bool isEscaped = false;
-            int quoteIndex = int.MinValue;
+            int quoteCount = 0;
+
             var sb = new StringBuilder(commandline.Length);
 
             for (int i = 0; i < commandline.Length; i++)
@@ -26,6 +27,7 @@ namespace Tiny.CommandLine.Tests
                 if (isEscaped)
                 {
                     sb.Append(ch);
+                    isEscaped = false;
                     continue;
                 }
 
@@ -37,28 +39,40 @@ namespace Tiny.CommandLine.Tests
 
                 if (ch == '"')
                 {
-                    if (quoteIndex == i - 1)
+                    if (quoteCount > 0 && commandline[i - 1] == '"')
                     {
-                        quoteIndex = int.MinValue;
+                        quoteCount--;
                         sb.Append('"');
                         continue;
                     }
 
-                    quoteIndex = i;
+                    quoteCount++;
                     continue;
                 }
 
-                if (quoteIndex < 0 && ch == ' ')
+                if (quoteCount != 1 && ch == ' ')
                 {
+                    quoteCount = 0;
                     list.Add(sb.ToString());
                     sb.Clear();
                     continue;
                 }
 
+                if (quoteCount > 1)
+                {
+                    quoteCount = 0;
+                    list.Add(sb.ToString());
+                    sb.Clear();
+                }
+
                 sb.Append(ch);
             }
 
-            list.Add(sb.ToString());
+            if (sb.Length > 0)
+            {
+                list.Add(sb.ToString());
+            }
+
             return list.ToArray();
         }
     }
