@@ -16,7 +16,7 @@ namespace Tiny.CommandLine.Implementation
         public DefaultHelpBuilder(TextWriter writer, int alignSize)
         {
             _writer = writer;
-            _outputWidth = Console.IsOutputRedirected ? int.MaxValue : Math.Max(10, Console.WindowWidth);
+            _outputWidth = Console.IsOutputRedirected ? int.MaxValue : Math.Max(alignSize, Console.WindowWidth);
             _alignSize = Math.Min(alignSize, _outputWidth - 5);
 
             _align = new char[alignSize];
@@ -25,7 +25,7 @@ namespace Tiny.CommandLine.Implementation
 
         public void Show(string name, string helpText, List<string> commandParts, List<CommandDesc> commands, List<OptionDesc> options)
         {
-            if (helpText != null)
+            if (!string.IsNullOrEmpty(helpText))
             {
                 _writer.WriteLine(helpText);
                 _writer.WriteLine();
