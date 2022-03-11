@@ -2,44 +2,44 @@ using System.Collections.Generic;
 
 namespace Tiny.CommandLine.Implementation
 {
-    public interface IHelpBuilder
-    {
-        void Show(string name, string helpText, List<string> commandParts, List<CommandDesc> commands, List<OptionDesc> options);
-    }
-
-    public readonly struct CommandDesc
+    public readonly struct Command
     {
         public readonly string Name;
         public readonly string HelpText;
 
-        public CommandDesc(string name, string helpText)
+        public Command(string name, string helpText)
         {
             Name = name;
             HelpText = helpText;
         }
     }
 
-    public readonly struct OptionDesc
+    public readonly struct Option
     {
         public readonly string ValueName;
         public readonly string HelpText;
-        public readonly string LongName;
-        public readonly char ShortName;
+        public readonly string Name;
+        public readonly char Alias;
         public readonly bool IsRequired;
         public readonly bool IsArgument;
         public readonly bool IsFlag;
         public readonly bool IsList;
 
-        public OptionDesc(char shortName, string longName, string valueName, string helpText, bool isRequired, bool isFlag, bool isList)
+        public Option(char alias, string name, string helpText, bool required, string valueName, bool list, bool flag)
         {
-            ShortName = shortName;
-            LongName = longName;
+            Alias = alias;
+            Name = name;
             ValueName = valueName;
             HelpText = helpText;
-            IsRequired = isRequired;
-            IsFlag = isFlag;
-            IsList = isList;
-            IsArgument = longName == null && shortName == '\0';
+            IsRequired = required;
+            IsList = list;
+            IsFlag = flag;
+            IsArgument = name == Constants.NoName && alias == Constants.NoAlias;
         }
+    }
+
+    public interface IHelpBuilder
+    {
+        void Show(string name, string helpText, IReadOnlyCollection<string> commandParts, IReadOnlyCollection<Command> commands, IReadOnlyCollection<Option> options);
     }
 }
