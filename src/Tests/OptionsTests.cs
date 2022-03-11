@@ -54,7 +54,7 @@ namespace Tiny.CommandLine.Tests
         public void False_should_be_parsed_as_bool(string cmd)
         {
             var result = true;
-            Run(cmd, s => s.Option('v', "value", out result, b => b.Default(true)));
+            Run(cmd, s => s.Option('v', "value", out result, valueDefault: () => true));
 
             Assert.IsFalse(result);
         }

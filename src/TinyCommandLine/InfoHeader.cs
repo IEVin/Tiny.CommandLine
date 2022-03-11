@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////
-// Copyright 2021 Ivan Vinogradov
+// Copyright 2022 Ivan Vinogradov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,26 +18,25 @@
 // Example:
 //    using Tiny.CommandLine;
 //
-//    CommandLineParser.Run("executable_file_name", args, c => c
-//        .HelpText("Description of the entire tool")
-//        .Command("sub_command", c1 => c1
-//            .HelpText("Description of this subcommand")
-//            // ...
-//            .Handler(() => { /* sub_command handler definition */ })
-//        )
-//        .Option('o', "option_name", out string option1, s => s
-//            .Required()
-//            .HelpText("What does this option do")
-//            .ValueName("value")
-//        )
+//    new CommandLineParser(args, "executable_file_name", "Description of the entire tool")
+//        .Command("sub_command", "Description of this sub-command", parser =>
+//        {
+//            parser
+//                // ... other options ...
+//                .Run();
+//
+//            /* sub-command logic */
+//        })
+//        .Option('o', "option_name", out string option1, "What does this option do", required: true, valueName: "value")
 //        .Argument(out string argument1, "Why is this argument needed")
 //        .Check(() => argument1 != null, "The argument1 must be not null")
-//        .Handler(() => CommandHandler(option1, argument1))
-//    );
+//        .Run();
 //
-//    static void CommandHandler(string option1, string argument1)
+//    MainCommandHandler(option1, argument1);
+//
+//    static void MainCommandHandler(string option1, string argument1)
 //    {
-//        // ...
+//        /* main command logic */
 //    }
 //
 ////////////////////////////////////////////////////////////////////////////

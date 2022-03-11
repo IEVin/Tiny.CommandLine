@@ -87,10 +87,10 @@ namespace Tiny.CommandLine.Implementation
                 _owner = owner;
                 _isFlag = isFlag;
 
-                if (shortName != '\0')
+                if (shortName != Constants.NoAlias)
                     _owner.BinarySearchOptionRange("-" + shortName, out _indShort, out _lastShort);
 
-                if (longName != null)
+                if (longName != Constants.NoName)
                     _owner.BinarySearchOptionRange("--" + longName, out _indLong, out _lastLong);
             }
 

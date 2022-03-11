@@ -4,47 +4,42 @@ namespace Tiny.CommandLine.Implementation
 {
     class HelpCollector
     {
-        List<CommandDesc> _commands;
-        List<OptionDesc> _options;
-        string _helpText;
-        bool _collectHelpText;
+        readonly LinkedList<Command> _commands = new LinkedList<Command>();
+        readonly LinkedList<Option> _options = new LinkedList<Option>();
+        readonly LinkedList<string> _commandParts = new LinkedList<string>();
+        readonly string _name;
+        readonly string _helpText;
 
-        public void HelpText(string text) => _helpText = text;
-
-        public void AddCommand(string name, CommandConfigurator configure)
+        public HelpCollector(string name, string helpText)
         {
-            if (_collectHelpText)
-                return;
-
-            _collectHelpText = true;
-            var currentHelpText = _helpText;
-            _helpText = null;
-
-            configure?.Invoke(new CommandBuilder(new Parser(this)));
-
-            _commands ??= new List<CommandDesc>();
-            _commands.Add(new CommandDesc(name, _helpText));
-
-            _helpText = currentHelpText;
-            _collectHelpText = false;
+            _name = name;
+            _helpText = helpText;
         }
 
-        public void AddOption<T>(char shortName, string longName, OptionConfigurator<T> configure, bool isList)
+        public void AddCommand(string name, string helpText)
         {
-            if (_collectHelpText)
-                return;
-
-            var state = new OptionState<T>();
-            configure?.Invoke(new OptionBuilder<T>(state));
-
-            if (state.IsHidden)
-                return;
-
-            _options ??= new List<OptionDesc>();
-            _options.Add(new OptionDesc(shortName, longName, state.ValueName, state.HelpText, state.IsRequired, Parser.IsFlag<T>(), isList));
+            _commands.AddLast(new Command(name, helpText));
         }
 
-        public void Show<T>(string name, List<string> commandParts, T helpBuilder) where T : IHelpBuilder
-            => helpBuilder.Show(name, _helpText, commandParts, _commands, _options);
+        public void AddOption<T>(char alias, string name, string helpText, string valueName, bool required, bool list)
+        {
+            _options.AddLast(new Option(alias, name, helpText, required, valueName, list, OptionParser.IsFlag<T>()));
+        }
+
+        public void EnterCommand(string name)
+        {
+            Clear();
+
+            _commandParts.AddLast(name);
+        }
+
+        public void Clear()
+        {
+            _commands.Clear();
+            _options.Clear();
+        }
+
+        public void Show<T>(T helpBuilder) where T : IHelpBuilder
+            => helpBuilder.Show(_name, _helpText, _commandParts, _commands, _options);
     }
 }

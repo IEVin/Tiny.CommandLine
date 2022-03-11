@@ -10,32 +10,34 @@ namespace Tiny.CommandLine.Tests
         [TestCase("--help")]
         public void Help_option_should_be_parsed(string cmd)
         {
-            Run(cmd, s => s
+            var res = CreateParser(cmd)
                 .Option('v', "value", out int _)
-            );
+                .GetResult();
+
+            CheckHelpInvoked(res);
         }
 
         [TestCase("-h")]
         [TestCase("--help")]
         public void Help_after_argument_should_be_invoked(string cmd)
         {
-            string argument = null;
+            var res = CreateParser(cmd)
+                .Argument(out string _)
+                .GetResult();
 
-            Run(cmd, s => s
-                .Argument(out argument)
-            );
-
-            Assert.IsNull(argument);
+            CheckHelpInvoked(res);
         }
 
         [TestCase("-h")]
         public void Help_with_required_options_should_be_invoked(string cmd)
         {
-            Run(cmd, s => s
-                .Option('v', "value", out int _, b => b
-                    .Required()
-                )
-            );
+            var res = CreateParser(cmd)
+                .Option('v', "value", out int _, required: true)
+                .GetResult();
+
+            CheckHelpInvoked(res);
         }
+
+        public static void CheckHelpInvoked(ParserResult result) => Assert.AreEqual(result.Result, ParserResult.State.HelpRequired);
     }
 }

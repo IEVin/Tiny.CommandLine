@@ -23,7 +23,7 @@ namespace Tiny.CommandLine.Implementation
             Array.Fill(_align, ' ');
         }
 
-        public void Show(string name, string helpText, List<string> commandParts, List<CommandDesc> commands, List<OptionDesc> options)
+        public void Show(string name, string helpText, IReadOnlyCollection<string> commandParts, IReadOnlyCollection<Command> commands, IReadOnlyCollection<Option> options)
         {
             if (!string.IsNullOrEmpty(helpText))
             {
@@ -38,7 +38,7 @@ namespace Tiny.CommandLine.Implementation
             ShowOptions(options);
         }
 
-        void ShowSyntax(string fileName, List<string> commandParts, List<CommandDesc> commands, List<OptionDesc> options)
+        void ShowSyntax(string fileName, IReadOnlyCollection<string> commandParts, IReadOnlyCollection<Command> commands, IReadOnlyCollection<Option> options)
         {
             if (options == null && commands == null)
                 return;
@@ -91,7 +91,7 @@ namespace Tiny.CommandLine.Implementation
             _writer.WriteLine();
         }
 
-        void ShowCommands(List<CommandDesc> commands)
+        void ShowCommands(IReadOnlyCollection<Command> commands)
         {
             if (commands == null)
                 return;
@@ -104,7 +104,7 @@ namespace Tiny.CommandLine.Implementation
             Console.WriteLine();
         }
 
-        void ShowOptions(List<OptionDesc> options)
+        void ShowOptions(IReadOnlyCollection<Option> options)
         {
             if (options == null)
                 return;
@@ -125,10 +125,10 @@ namespace Tiny.CommandLine.Implementation
             }
         }
 
-        string GetOptionName(OptionDesc desc, int argumentNum, bool shortForm)
+        string GetOptionName(Option desc, int argumentNum, bool shortForm)
         {
-            // format "   -s, --long <value>"
-            var len = 12 + (desc.LongName?.Length ?? 0) + (desc.ValueName?.Length ?? 0);
+            // format "   -a, --name <value>"
+            var len = 12 + (desc.Name?.Length ?? 0) + (desc.ValueName?.Length ?? 0);
             var sb = new StringBuilder(len);
 
             // argument
@@ -144,19 +144,19 @@ namespace Tiny.CommandLine.Implementation
             }
 
             // option
-            if (desc.ShortName != '\0')
+            if (desc.Alias != Constants.NoAlias)
             {
                 sb.Append('-');
-                sb.Append(desc.ShortName);
+                sb.Append(desc.Alias);
             }
 
-            if (desc.LongName != null && (!shortForm || sb.Length == 0))
+            if (desc.Name != Constants.NoName && (!shortForm || sb.Length == 0))
             {
                 if (sb.Length != 0)
                     sb.Append(", ");
 
                 sb.Append("--");
-                sb.Append(desc.LongName);
+                sb.Append(desc.Name);
             }
 
             if (!desc.IsFlag)

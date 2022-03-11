@@ -10,23 +10,18 @@ const int maxNestedNameSpaceLevel = 10;
 const int emptyLinesCountBetweenFiles = 1;
 const string whitespaces = "\t ";
 
-CommandLineParser.Run("compose", args, b => b
+new CommandLineParser(args, "compose")
     .Option('o', "output", out string output, "Path to output file with combined sources")
     .Option('f', "force", out bool force, "Force override output file if exist")
     .Option("header", out string header, "Path to file with usage and license header")
-    .Option("intend", out string intend, s => s
-        .HelpText("Characters that will be used as indentation")
-        .Default("    ")
-    )
-    .Argument(out string input, s => s
-        .HelpText("Path to directory with sources")
-        .ValueName("path")
-        .Required()
-    )
+    .Option("intend", out string intend, "Characters that will be used as indentation", () => "    ")
+    .Argument(out string input, "Path to directory with sources", required: true, valueName: "path")
     .Check(() => Directory.Exists(input), $"Directory '{input}' is not found")
     .Check(() => header == null || File.Exists(header), $"Header file '{header}' is not found")
     .Check(() => output == null || force || !File.Exists(output), $"Output file '{output}' is already exist")
-    .Handler(() => ComposeHandler(input, output, header, intend)));
+    .Run();
+
+ComposeHandler(input, output, header, intend);
 
 
 static void ComposeHandler(string input, string output, string header, string intend)
@@ -231,7 +226,7 @@ static void SaveCombinedContent(string path, IEnumerable<string> headerContent, 
 
         foreach (var content in item.Value)
         {
-            if(content.Length > 0)
+            if (content.Length > 0)
                 output.Write(currentIntend);
 
             output.WriteLine(content);
