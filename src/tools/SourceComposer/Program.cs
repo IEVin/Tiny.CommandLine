@@ -162,6 +162,12 @@ static int GetIndexOfToken(string line, string value)
 
 static void SaveCombinedContent(string path, IEnumerable<string> headerContent, HashSet<string> usingList, Dictionary<string, List<string>> sourcesDict, ReadOnlySpan<char> intend)
 {
+    var outputDir = Path.GetDirectoryName(path);
+    if (outputDir != null)
+    {
+        Directory.CreateDirectory(outputDir);
+    }
+
     using var stream = path != null
         ? File.Create(path)
         : Console.OpenStandardOutput();
