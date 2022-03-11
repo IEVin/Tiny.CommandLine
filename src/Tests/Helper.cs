@@ -1,14 +1,25 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
+using NUnit.Framework;
 
 namespace Tiny.CommandLine.Tests
 {
     public static class Helper
     {
-        public static void Run(string cmd, CommandConfigurator configure)
+        public static CommandLineParser CreateParser(string cmd)
         {
             var args = SplitArguments(cmd);
-            CommandLineParser.Run("test", args, configure);
+            return new CommandLineParser(args, "test");
+        }
+
+        public static void Run(string cmd, Action<CommandLineParser> configure)
+        {
+            var parser = CreateParser(cmd);
+            configure(parser);
+
+            var result = parser.GetResult();
+            Assert.IsTrue(result);
         }
 
         static string[] SplitArguments(string commandline)
