@@ -8,7 +8,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <RootNamespace>Tiny.CommandLine.Sample</RootNamespace>
     <AssemblyName>Tiny.CommandLine.Sample</AssemblyName>
   </PropertyGroup>
