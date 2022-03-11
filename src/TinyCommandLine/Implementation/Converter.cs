@@ -85,7 +85,7 @@ namespace Tiny.CommandLine.Implementation
         {
             TParser parser = default;
             bool parsed = parser.TryParse(str, out var temp);
-            value = parsed ? (T) (object) temp : default;
+            value = parsed ? (T)(object)temp : default;
             return parsed;
         }
 
