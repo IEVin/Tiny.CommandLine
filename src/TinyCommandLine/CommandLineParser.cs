@@ -36,6 +36,9 @@ namespace Tiny.CommandLine
             if (!hidden)
                 _helpCollector.AddCommand(name, helpText);
 
+            if (_parser.HasError)
+                return this;
+
             bool isMatch = _parser.Command(name);
             if (!isMatch)
                 return this;
@@ -52,79 +55,63 @@ namespace Tiny.CommandLine
         public CommandLineParser Option<T>(char alias, string name, out T value, string helpText = null,
             Func<T> valueDefault = null, bool required = false, string valueName = null, bool hidden = false)
         {
-            if (_state != State.Active)
+            if (!TryCollectHelp<T>(alias, name, helpText, required, valueName, hidden, false))
             {
                 value = default;
                 return this;
             }
 
-            if (!hidden)
-                _helpCollector.AddOption<T>(alias, name, helpText, valueName, required, false);
-
             value = _parser.Option(alias, name, valueDefault, required);
-            _state = _parser.HasError ? State.Interrupted : State.Active;
             return this;
         }
 
         public CommandLineParser OptionList<T>(char alias, string name, out IReadOnlyList<T> value, string helpText = null,
             Func<IReadOnlyList<T>> valueDefault = null, bool required = false, string valueName = null, bool hidden = false)
         {
-            if (_state != State.Active)
+            if (!TryCollectHelp<T>(alias, name, helpText, required, valueName, hidden, true))
             {
                 value = default;
                 return this;
             }
 
-            if (!hidden)
-                _helpCollector.AddOption<T>(alias, name, helpText, valueName, required, true);
-
             value = _parser.OptionList(alias, name, valueDefault, required);
-            _state = _parser.HasError ? State.Interrupted : State.Active;
             return this;
         }
 
         public CommandLineParser Argument<T>(out T value, string helpText = null,
             Func<T> valueDefault = null, bool required = false, string valueName = null, bool hidden = false)
         {
-            if (_state != State.Active)
+            if (!TryCollectHelp<T>(Constants.NoAlias, Constants.NoName, helpText, required, valueName, hidden, false))
             {
                 value = default;
                 return this;
             }
 
-            if (!hidden)
-                _helpCollector.AddOption<T>(Constants.NoAlias, Constants.NoName, helpText, valueName, required, false);
-
             CheckHelp();
 
             value = _parser.Argument(valueDefault, required, valueName);
-            _state = _parser.HasError ? State.Interrupted : State.Active;
             return this;
         }
 
         public CommandLineParser ArgumentList<T>(out IReadOnlyList<T> value, string helpText = null,
             Func<IReadOnlyList<T>> valueDefault = null, bool required = false, string valueName = null, bool hidden = false)
         {
-            if (_state != State.Active)
+            if (!TryCollectHelp<T>(Constants.NoAlias, Constants.NoName, helpText, required, valueName, hidden, true))
             {
                 value = default;
                 return this;
             }
 
-            if (!hidden)
-                _helpCollector.AddOption<T>(Constants.NoAlias, Constants.NoName, helpText, valueName, required, true);
-
             CheckHelp();
 
             value = _parser.ArgumentList(valueDefault, required, valueName);
-            _state = _parser.HasError ? State.Interrupted : State.Active;
             return this;
         }
 
 
         public CommandLineParser Check(Func<bool> predicate, string message)
         {
-            if (_state != State.Active)
+            if (_state != State.Active || _parser.HasError)
                 return this;
 
             if (!predicate())
@@ -150,6 +137,7 @@ namespace Tiny.CommandLine
             return new ParserResult(_result);
         }
 
+
         void Finish()
         {
             _state = State.Finished;
@@ -172,6 +160,16 @@ namespace Tiny.CommandLine
             }
         }
 
+        bool TryCollectHelp<T>(char alias, string name, string helpText, bool required, string valueName, bool hidden, bool list)
+        {
+            if (_state != State.Active)
+                return false;
+
+            if (!hidden)
+                _helpCollector.AddOption<T>(alias, name, helpText, valueName, required, list);
+
+            return !_parser.HasError;
+        }
 
         void CheckHelp()
         {
