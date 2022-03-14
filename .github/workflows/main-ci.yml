@@ -25,7 +25,7 @@ jobs:
       run: dotnet build
 
     - name: Test
-      run: dotnet test --no-build
+      run: dotnet test --no-build --nologo
 
     - name: Publish source
       run: scripts/publish_src.sh
