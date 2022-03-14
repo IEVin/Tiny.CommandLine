@@ -40,7 +40,7 @@ namespace Tiny.CommandLine.Implementation
 
         void ShowSyntax(string fileName, IReadOnlyCollection<string> commandParts, IReadOnlyCollection<Command> commands, IReadOnlyCollection<Option> options)
         {
-            if (options == null && commands == null)
+            if (options.Count == 0 && commands.Count == 0)
                 return;
 
             _writer.Write("Usage: ");
@@ -53,36 +53,33 @@ namespace Tiny.CommandLine.Implementation
             }
 
             int argumentNum = 0;
-            if (options != null)
+            foreach (var desc in options)
             {
-                foreach (var desc in options)
+                _writer.Write(' ');
+
+                if (desc.IsArgument)
+                    argumentNum++;
+
+                var name = GetOptionName(desc, argumentNum, true);
+                if (!desc.IsRequired)
                 {
-                    _writer.Write(' ');
-
-                    if (desc.IsArgument)
-                        argumentNum++;
-
-                    var name = GetOptionName(desc, argumentNum, true);
-                    if (!desc.IsRequired)
-                    {
-                        _writer.Write('[');
-                        _writer.Write(name);
-                        _writer.Write(']');
-                    }
-                    else if (desc.IsArgument)
-                    {
-                        _writer.Write('<');
-                        _writer.Write(name);
-                        _writer.Write('>');
-                    }
-                    else
-                    {
-                        _writer.Write(name);
-                    }
+                    _writer.Write('[');
+                    _writer.Write(name);
+                    _writer.Write(']');
+                }
+                else if (desc.IsArgument)
+                {
+                    _writer.Write('<');
+                    _writer.Write(name);
+                    _writer.Write('>');
+                }
+                else
+                {
+                    _writer.Write(name);
                 }
             }
 
-            if (commands != null)
+            if (commands.Count > 0)
             {
                 _writer.Write(" <command> [args]");
             }
@@ -93,7 +90,7 @@ namespace Tiny.CommandLine.Implementation
 
         void ShowCommands(IReadOnlyCollection<Command> commands)
         {
-            if (commands == null)
+            if (commands.Count == 0)
                 return;
 
             foreach (var desc in commands)
@@ -106,9 +103,6 @@ namespace Tiny.CommandLine.Implementation
 
         void ShowOptions(IReadOnlyCollection<Option> options)
         {
-            if (options == null)
-                return;
-
             int argumentNum = 0;
             foreach (var desc in options)
             {
