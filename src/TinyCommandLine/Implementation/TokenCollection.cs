@@ -60,8 +60,7 @@ namespace Tiny.CommandLine.Implementation
             return -1;
         }
 
-        public OptionsIterator IterateOptions(char shortName, string longName, bool isFlag)
-            => new OptionsIterator(this, shortName, longName, isFlag);
+        public OptionsIterator IterateOptions(char alias, string name, bool isFlag) => new OptionsIterator(this, alias, name, isFlag);
 
         void BinarySearchOptionRange(string name, out int lowerBound, out int upperBound)
         {
@@ -74,36 +73,36 @@ namespace Tiny.CommandLine.Implementation
         public struct OptionsIterator
         {
             readonly TokenCollection _owner;
-            readonly int _lastShort;
-            readonly int _lastLong;
             readonly bool _isFlag;
+            readonly int _lastAlias;
+            readonly int _lastName;
 
-            int _indShort;
-            int _indLong;
+            int _indAlias;
+            int _indName;
 
-            internal OptionsIterator(TokenCollection owner, char shortName, string longName, bool isFlag)
+            internal OptionsIterator(TokenCollection owner, char alias, string name, bool isFlag)
                 : this()
             {
                 _owner = owner;
                 _isFlag = isFlag;
 
-                if (shortName != Constants.NoAlias)
-                    _owner.BinarySearchOptionRange("-" + shortName, out _indShort, out _lastShort);
+                if (alias != Constants.NoAlias)
+                    _owner.BinarySearchOptionRange("-" + alias, out _indAlias, out _lastAlias);
 
-                if (longName != Constants.NoName)
-                    _owner.BinarySearchOptionRange("--" + longName, out _indLong, out _lastLong);
+                if (name != Constants.NoName)
+                    _owner.BinarySearchOptionRange("--" + name, out _indName, out _lastName);
             }
 
             public bool TryMoveNext(out int index, out int length)
             {
                 var options = _owner._options;
 
-                while (_indLong < _lastLong || _indShort < _lastShort)
+                while (_indName < _lastName || _indAlias < _lastAlias)
                 {
-                    var tokenIndLong = _indLong < _lastLong ? options[_indLong].Index : int.MaxValue;
-                    var tokenIndShort = _indShort < _lastShort ? options[_indShort].Index : int.MaxValue;
+                    var tokenIndName = _indName < _lastName ? options[_indName].Index : int.MaxValue;
+                    var tokenIndAlias = _indAlias < _lastAlias ? options[_indAlias].Index : int.MaxValue;
 
-                    int optionIndex = tokenIndShort < tokenIndLong ? _indShort++ : _indLong++;
+                    int optionIndex = tokenIndAlias < tokenIndName ? _indAlias++ : _indName++;
 
                     var option = options[optionIndex];
                     if (_owner._used[option.Index])
