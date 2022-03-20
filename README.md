@@ -11,7 +11,9 @@ The **TinyCommandLine** is a small but full-featured command line parser for C#.
 
 Why another one parser?
 ---------------------
-In most cases only a small number of options are sufficient for a console application. It is redundant to create a bulky structure with attributes. Also this works slowly because of we need to use reflection. It can also cause problems for trimming and compiling to the native view.
+Most console applications require only a small number of parameters. In this case declaring a bulky structure with attributes would be redundant.
+**TinyCommandLine** uses a simple python-like syntax that allows to declare one commandline argument in one line.
+It also don't use reflection and helps to avoid problems with trimming application and compiling to the native view.
 
 Usage
 ---------------------
@@ -38,18 +40,18 @@ Usage: example [-i <value>] --output <value>
     --output                The path to output file
 ```
 
-An example using all parser features can be found in [src/Sample/Program.cs](https://github.com/IEVin/TinyCommandLine/blob/master/src/Sample/Program.cs)
+To see a detailed example with all features take a look at [src/Sample/Program.cs](https://github.com/IEVin/TinyCommandLine/blob/master/src/Sample/Program.cs).
 
 ### Supported features
 - Options (with names and/or alias) and arguments
-- Commands and child commands (no depth limit)
+- Commands and sub-commands (no depth limit)
 - Global options applied to all commands (just defined before commands)
 - Help (`-h` and `--help`)
 - Types: Numeric (all signed/unsigned/float), bool, char, string, DateTime, Nullable<T>
 - Multiple options and arguments occurrence (like `-e one -e two -e three`)
 - Сustom type conversion
 
-### Not supported features in the plans
+### Not supported features (but in the plans)
 - Enums out of the box. Can be parsed with custom converter.
 - Collections (like `-e one two three`). Can be parsed as a `OptionList`
 - Version (`-v` and `--verions`)
