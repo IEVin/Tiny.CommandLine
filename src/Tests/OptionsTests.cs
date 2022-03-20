@@ -93,32 +93,15 @@ namespace Tiny.CommandLine.Tests
             return $"{shortName}|{longName}";
         }
 
-        [TestCase("--path \"C:\\\" -f", ExpectedResult = "\"C:\\\"", Ignore = "Issue with .net command line parser")]
-        public string String_with_backslash_should_be_parsed_correctly(string cmd)
+        [TestCase("--str \"--flag\"", Ignore = "Flags must be declared after all options")]
+        public void Option_value_started_with_double_dash_should_be_parsed_correct(string cmd)
         {
-            string result = null;
-            bool force = false;
-            Run(cmd, s => s
-                .Option("path", out result)
-                .Option('f', out force)
-            );
+            CreateParser(cmd)
+                .Option("flag", out bool flag)
+                .Option("str", out string str)
+                .Run();
 
-            Assert.IsTrue(force);
-            return result;
-        }
-
-        [TestCase("--str --flag", Ignore = "Issue with .net command line parser")]
-        public void Option_value_started_with_backslash_should_be_parsed_correct(string cmd)
-        {
-            string str = null;
-            bool flag = false;
-
-            Run(cmd, s => s
-                .Option("flag", out flag)
-                .Option("str", out str)
-            );
-
-            Assert.AreEqual("--flag", str);
+            Assert.AreEqual(str, "--flag");
             Assert.IsFalse(flag);
         }
 
