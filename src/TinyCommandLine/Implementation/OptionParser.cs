@@ -30,19 +30,23 @@ namespace Tiny.CommandLine.Implementation
 
         public T Option<T>(char alias, string name, Func<T> valueDefault, bool required)
         {
-            var itr = _tokens.IterateOptions(alias, name, IsFlag<T>());
+            var itr = _tokens.IterateOptions(alias, name);
 
-            int optionIndex = int.MinValue;
-            int optionLength = int.MinValue;
+            int optionIndex = 0;
+            int optionLength = 0;
+            ReadOnlySpan<char> valueToken = null;
 
             while (itr.TryMoveNext(out var index, out var length))
             {
+                if (!TryGetOptionValueToken<T>(index, length, out valueToken))
+                    return default;
+
                 optionIndex = index;
                 optionLength = length;
             }
 
-            if (optionIndex >= 0)
-                return GetOptionValue<T>(optionIndex, optionLength);
+            if (optionLength != 0)
+                return GetOptionValue<T>(valueToken, optionIndex, optionLength);
 
             return required
                 ? SetErrorOptionRequired<T>(alias, name)
@@ -51,12 +55,15 @@ namespace Tiny.CommandLine.Implementation
 
         public IReadOnlyList<T> OptionList<T>(char alias, string name, Func<IReadOnlyList<T>> valueDefault, bool required)
         {
-            var itr = _tokens.IterateOptions(alias, name, IsFlag<T>());
+            var itr = _tokens.IterateOptions(alias, name);
 
             var result = new List<T>();
             while (itr.TryMoveNext(out var index, out var length))
             {
-                var optionValue = GetOptionValue<T>(index, length);
+                if (!TryGetOptionValueToken<T>(index, length, out var valueToken))
+                    return default;
+
+                var optionValue = GetOptionValue<T>(valueToken, index, length);
                 if (_error != null)
                     return default;
 
@@ -73,7 +80,7 @@ namespace Tiny.CommandLine.Implementation
 
         public T Argument<T>(Func<T> valueDefault, bool required, string valueName)
         {
-            if (ArgumentInternal(out T value, valueName))
+            if (TryGetArgument(out T value, valueName))
                 return value;
 
             return required
@@ -84,7 +91,7 @@ namespace Tiny.CommandLine.Implementation
         public IReadOnlyList<T> ArgumentList<T>(Func<IReadOnlyList<T>> valueDefault, bool required, string valueName)
         {
             var list = new List<T>(_tokens.RemainingItemsCount);
-            while (ArgumentInternal(out T item, valueName))
+            while (TryGetArgument(out T item, valueName))
             {
                 list.Add(item);
             }
@@ -97,7 +104,7 @@ namespace Tiny.CommandLine.Implementation
                 : GetDefault(valueDefault);
         }
 
-        bool ArgumentInternal<T>(out T value, string valueName)
+        bool TryGetArgument<T>(out T value, string valueName)
         {
             int index = _tokens.GetNextIndex();
             if (index < 0)
@@ -108,43 +115,47 @@ namespace Tiny.CommandLine.Implementation
 
             _tokens.MarkAsUsed(index);
 
-            var valStr = _tokens[index];
-
-            if (Converter<T>.TryParse(valStr, out value))
+            if (Converter<T>.TryParse(_tokens[index], out value))
                 return true;
 
             SetParseError(valueName ?? "argument");
             return false;
         }
 
-        T GetOptionValue<T>(int index, int length)
+        public bool TryGetOptionValueToken<T>(int index, int length, out ReadOnlySpan<char> value)
         {
-            var token = _tokens[index];
+            value = default;
+
+            string token = _tokens[index];
             if (length < token.Length)
             {
-                var str = token.AsSpan(length + 1);
-
-                if (Converter<T>.TryParse(str, out var value))
-                    return value;
-
-                SetParseError(token.Substring(0, length));
-                return default;
+                value = token.AsSpan(length + 1);
+                return true;
             }
 
             if (IsFlag<T>())
-                return (T)(object)true;
+                return true;
 
-            if (index + 1 < _tokens.Count)
+            if (index + 1 >= _tokens.Count || _tokens.IsUsed(index + 1))
             {
-                var valueStr = _tokens[index + 1];
-                if (Converter<T>.TryParse(valueStr, out var value))
-                    return value;
-
-                SetParseError(valueStr);
-                return default;
+                SetError($"Option {token.Remove(length)} value expected.");
+                return false;
             }
 
-            SetError($"Option {token} value expected.");
+            _tokens.MarkAsUsed(index + 1);
+            value = _tokens[index + 1];
+            return true;
+        }
+
+        T GetOptionValue<T>(ReadOnlySpan<char> valueToken, int optionIndex, int optionLength)
+        {
+            if (IsFlag<T>() && valueToken.IsEmpty)
+                return (T)(object)true;
+
+            if (Converter<T>.TryParse(valueToken, out var value))
+                return value;
+
+            SetParseError(_tokens[optionIndex].Remove(optionLength));
             return default;
         }
 

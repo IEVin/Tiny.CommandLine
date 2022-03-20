@@ -105,6 +105,17 @@ namespace Tiny.CommandLine.Tests
             Assert.IsFalse(flag);
         }
 
+        [TestCase("--str2 --str1 text")]
+        public void Invalid_arguments_should_return_parsing_error(string cmd)
+        {
+            var res = CreateParser(cmd)
+                .Option("str1", out string _)
+                .Option("str2", out string _)
+                .GetResult();
+
+            Assert.AreEqual(res.Result, ParserResult.State.Error);
+        }
+
         static T ParseOption<T>(string cmd)
         {
             T result = default;

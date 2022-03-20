@@ -45,6 +45,7 @@ namespace Tiny.CommandLine.Implementation
 
         public string this[int index] => _tokens[index];
 
+        public bool IsUsed(int index) => _used[index];
         public void MarkAsUsed(int index) => _used[index] = true;
 
         public int GetNextIndex()
@@ -60,7 +61,7 @@ namespace Tiny.CommandLine.Implementation
             return -1;
         }
 
-        public OptionsIterator IterateOptions(char alias, string name, bool isFlag) => new OptionsIterator(this, alias, name, isFlag);
+        public OptionsIterator IterateOptions(char alias, string name) => new OptionsIterator(this, alias, name);
 
         void BinarySearchOptionRange(string name, out int lowerBound, out int upperBound)
         {
@@ -73,18 +74,16 @@ namespace Tiny.CommandLine.Implementation
         public struct OptionsIterator
         {
             readonly TokenCollection _owner;
-            readonly bool _isFlag;
             readonly int _lastAlias;
             readonly int _lastName;
 
             int _indAlias;
             int _indName;
 
-            internal OptionsIterator(TokenCollection owner, char alias, string name, bool isFlag)
+            internal OptionsIterator(TokenCollection owner, char alias, string name)
                 : this()
             {
                 _owner = owner;
-                _isFlag = isFlag;
 
                 if (alias != Constants.NoAlias)
                     _owner.BinarySearchOptionRange("-" + alias, out _indAlias, out _lastAlias);
@@ -112,10 +111,6 @@ namespace Tiny.CommandLine.Implementation
 
                     index = option.Index;
                     length = option.Length;
-
-                    if (option.Str.Length == length && !_isFlag && index + 1 < _owner._tokens.Length)
-                        _owner.MarkAsUsed(index + 1);
-
                     return true;
                 }
 
@@ -127,13 +122,13 @@ namespace Tiny.CommandLine.Implementation
 
         readonly struct OptionInfo : IComparable<OptionInfo>
         {
-            public readonly string Str;
             public readonly int Index;
             public readonly int Length;
+            readonly string _str;
 
             public OptionInfo(string str, int length, int index)
             {
-                Str = str;
+                _str = str;
                 Index = index;
                 Length = length;
             }
@@ -142,7 +137,7 @@ namespace Tiny.CommandLine.Implementation
             {
                 int len = Math.Max(Length, other.Length);
 
-                int order = string.CompareOrdinal(Str, 0, other.Str, 0, len);
+                int order = string.CompareOrdinal(_str, 0, other._str, 0, len);
                 return order != 0 ? order : Index.CompareTo(other.Index);
             }
         }
