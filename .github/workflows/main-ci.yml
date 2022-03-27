@@ -27,11 +27,19 @@ jobs:
     - name: Test
       run: dotnet test --no-build --nologo
 
-    - name: Publish source
-      run: scripts/publish_src.sh
+    - name: Publish
+      run: |
+        scripts/publish_src.sh
+        dotnet pack src/TinyCommandLine -o build/publish
 
     - name: Upload source
       uses: actions/upload-artifact@v3
       with:
         name: Tiny.CommandLine.cs
-        path: build/publish
+        path: build/publish/Tiny.CommandLine.cs
+
+    - name: Upload nuget package
+      uses: actions/upload-artifact@v3
+      with:
+        name: Nuget package
+        path: build/publish/*.nupkg

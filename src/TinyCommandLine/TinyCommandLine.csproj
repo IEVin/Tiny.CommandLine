@@ -13,7 +13,18 @@
     <RootNamespace>Tiny.CommandLine</RootNamespace>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <LangVersion>8.0</LangVersion>
-    <Version>0.0.1.0</Version>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>Tiny.CommandLine</PackageId>
+    <Title>Tiny Command Line Parser</Title>
+    <Description>A Tiny Command Line parser for C#. Short python-like API, no dependencies, no reflection</Description>
+    <PackageTags>tiny command line commandline argument option parser parsing syntax cli</PackageTags>
+    <Copyright>Copyright 2022 Ivan Vinogradov</Copyright>
+    <PackageProjectUrl>https://github.com/IEVin/TinyCommandLine</PackageProjectUrl>
+    <PackageReleaseNotes>https://github.com/IEVin/TinyCommandLine/releases/tag/release/v$(Version)</PackageReleaseNotes>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
   </PropertyGroup>
 
   <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" />

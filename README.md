@@ -1,4 +1,4 @@
-TinyCommandLine [![Build Status](https://github.com/IEVin/TinyCommandLine/actions/workflows/main-ci.yml/badge.svg)](https://github.com/IEVin/TinyCommandLine/actions/workflows/main-ci.yml)
+TinyCommandLine [![Build Status](https://github.com/IEVin/TinyCommandLine/actions/workflows/main-ci.yml/badge.svg)](https://github.com/IEVin/TinyCommandLine/actions/workflows/main-ci.yml)[![Nuget](https://img.shields.io/nuget/v/Tiny.CommandLine)](https://www.nuget.org/packages/Tiny.CommandLine)
 =====================
 
 The **TinyCommandLine** is a small but full-featured command line parser for C#. 
@@ -47,7 +47,7 @@ To see a detailed example with all features take a look at [src/Sample/Program.c
 - Commands and sub-commands (no depth limit)
 - Global options applied to all commands (just defined before commands)
 - Help (`-h` and `--help`)
-- Types: Numeric (all signed/unsigned/float), bool, char, string, DateTime, Nullable<T>
+- Types: Numeric (all signed/unsigned/float), bool, char, string, DateTime, Nullable&lt;T&gt;
 - Multiple options and arguments occurrence (like `-e one -e two -e three`)
 - Сustom type conversion
 
