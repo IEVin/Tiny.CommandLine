@@ -138,7 +138,7 @@ namespace Tiny.CommandLine.Implementation
 
             if (index + 1 >= _tokens.Count || _tokens.IsUsed(index + 1))
             {
-                SetError($"Option {token.Remove(length)} value expected.");
+                SetError($"Option {token.Substring(0, length)} value expected.");
                 return false;
             }
 
