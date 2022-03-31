@@ -20,10 +20,11 @@ namespace Tiny.CommandLine.Implementation
             _alignSize = Math.Min(alignSize, _outputWidth - 5);
 
             _align = new char[alignSize];
-            Array.Fill(_align, ' ');
+            for (int i = 0; i < _align.Length; i++)
+                _align[i] = ' ';
         }
 
-        public void Show(string name, string helpText, IReadOnlyCollection<string> commandParts, IReadOnlyCollection<Command> commands, IReadOnlyCollection<Option> options)
+        public void Show(string name, string helpText, ICollection<string> commandParts, ICollection<Command> commands, ICollection<Option> options)
         {
             if (!string.IsNullOrEmpty(helpText))
             {
@@ -38,7 +39,7 @@ namespace Tiny.CommandLine.Implementation
             ShowOptions(options);
         }
 
-        void ShowSyntax(string fileName, IReadOnlyCollection<string> commandParts, IReadOnlyCollection<Command> commands, IReadOnlyCollection<Option> options)
+        void ShowSyntax(string fileName, ICollection<string> commandParts, ICollection<Command> commands, ICollection<Option> options)
         {
             if (options.Count == 0 && commands.Count == 0)
                 return;
@@ -88,7 +89,7 @@ namespace Tiny.CommandLine.Implementation
             _writer.WriteLine();
         }
 
-        void ShowCommands(IReadOnlyCollection<Command> commands)
+        void ShowCommands(ICollection<Command> commands)
         {
             if (commands.Count == 0)
                 return;
@@ -101,7 +102,7 @@ namespace Tiny.CommandLine.Implementation
             Console.WriteLine();
         }
 
-        void ShowOptions(IReadOnlyCollection<Option> options)
+        void ShowOptions(ICollection<Option> options)
         {
             int argumentNum = 0;
             foreach (var desc in options)

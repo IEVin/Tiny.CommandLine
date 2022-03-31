@@ -34,7 +34,7 @@ namespace Tiny.CommandLine.Implementation
 
             int optionIndex = 0;
             int optionLength = 0;
-            ReadOnlySpan<char> valueToken = null;
+            ReadOnlySpan<char> valueToken = default;
 
             while (itr.TryMoveNext(out var index, out var length))
             {
@@ -149,7 +149,7 @@ namespace Tiny.CommandLine.Implementation
 
         T GetOptionValue<T>(ReadOnlySpan<char> valueToken, int optionIndex, int optionLength)
         {
-            if (IsFlag<T>() && valueToken.IsEmpty)
+            if (IsFlag<T>() && valueToken.Length == 0)
                 return (T)(object)true;
 
             if (Converter<T>.TryParse(valueToken, out var value))

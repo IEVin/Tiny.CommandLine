@@ -50,7 +50,7 @@ namespace Tiny.CommandLine.Implementation
 
         public int GetNextIndex()
         {
-            for (; _nextItemIndex < _used.Count; _nextItemIndex++)
+            for (; _nextItemIndex < _used.Length; _nextItemIndex++)
             {
                 if (_used[_nextItemIndex])
                     continue;

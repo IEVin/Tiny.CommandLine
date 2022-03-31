@@ -40,6 +40,6 @@ namespace Tiny.CommandLine.Implementation
 
     public interface IHelpBuilder
     {
-        void Show(string name, string helpText, IReadOnlyCollection<string> commandParts, IReadOnlyCollection<Command> commands, IReadOnlyCollection<Option> options);
+        void Show(string name, string helpText, ICollection<string> commandParts, ICollection<Command> commands, ICollection<Option> options);
     }
 }
