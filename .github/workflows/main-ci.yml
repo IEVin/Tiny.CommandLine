@@ -21,25 +21,16 @@ jobs:
       with:
         dotnet-version: 6.0.x
 
-    - name: Build
-      run: dotnet build
+    - name: Build & Publish
+      run: |
+        dotnet build -c Release
+        scripts/publish_src.sh
 
     - name: Test
-      run: dotnet test --no-build --nologo
+      run: dotnet test --no-build --nologo -c Release
 
-    - name: Publish
-      run: |
-        scripts/publish_src.sh
-        dotnet pack src/TinyCommandLine -o build/publish
-
-    - name: Upload source
+    - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: Tiny.CommandLine.cs
-        path: build/publish/Tiny.CommandLine.cs
-
-    - name: Upload nuget package
-      uses: actions/upload-artifact@v3
-      with:
-        name: Nuget package
-        path: build/publish/*.nupkg
+        name: artifacts
+        path: build/publish

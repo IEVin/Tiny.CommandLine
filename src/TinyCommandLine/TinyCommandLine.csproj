@@ -2,13 +2,14 @@
   <PropertyGroup>
     <BaseIntermediateOutputPath>..\..\build\obj\TinyCommandLine</BaseIntermediateOutputPath>
     <OutputPath>..\..\build\bin\TinyCommandLine\$(Configuration)</OutputPath>
+    <PackageOutputPath>..\..\build\publish</PackageOutputPath>
   </PropertyGroup>
 
   <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.props" />
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     <AssemblyName>Tiny.CommandLine</AssemblyName>
     <RootNamespace>Tiny.CommandLine</RootNamespace>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
@@ -21,10 +22,14 @@
     <Title>Tiny Command Line Parser</Title>
     <Description>A Tiny Command Line parser for C#. Short python-like API, no dependencies, no reflection</Description>
     <PackageTags>tiny command line commandline argument option parser parsing syntax cli</PackageTags>
+    <Authors>IEVin</Authors>
     <Copyright>Copyright 2022 Ivan Vinogradov</Copyright>
     <PackageProjectUrl>https://github.com/IEVin/TinyCommandLine</PackageProjectUrl>
     <PackageReleaseNotes>https://github.com/IEVin/TinyCommandLine/releases/tag/release/v$(Version)</PackageReleaseNotes>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" />
