@@ -1,6 +1,6 @@
 namespace Tiny.CommandLine.Implementation
 {
-#if !(NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER)
+    #if !(NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER)
     /* It's not a complete implementation of ReadOnlySpan<T> but small wrapper over string to support old framework versions */
     public readonly struct ReadOnlySpan<T>
     {
@@ -21,5 +21,5 @@ namespace Tiny.CommandLine.Implementation
         public static ReadOnlySpan<char> AsSpan(this string str, int start) => str.Substring(start);
         public static ReadOnlySpan<char> AsSpan(this string str, int start, int length) => str.Substring(start, length);
     }
-#endif
+    #endif
 }
