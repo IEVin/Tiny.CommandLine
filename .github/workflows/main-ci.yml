@@ -4,7 +4,7 @@ on: [push, pull_request]
 jobs:
 
   build:
-    name: Build-Test-Publish
+    name: Build-Publish
     runs-on: ubuntu-latest
 
     env:
@@ -21,16 +21,52 @@ jobs:
       with:
         dotnet-version: 6.0.x
 
-    - name: Build & Publish
-      run: |
-        dotnet build -c Release
-        scripts/publish_src.sh
+    - name: Build
+      run: dotnet build -c Release
 
-    - name: Test
-      run: dotnet test --no-build --nologo -c Release
+    - name: Publish
+      shell: pwsh
+      run: ./scripts/publish_source.ps1
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
         name: artifacts
         path: build/publish
+
+  test:
+    needs: build
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - dotnet: '3.0.x'
+            target: 'netcoreapp3.0'
+          - dotnet: '6.0.x'
+            target: 'net6.0'
+
+    name: Test ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: ${{ matrix.dotnet }}
+
+    - name: Download artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: artifacts
+        path: build/publish
+
+    - name: Add composed source
+      shell: pwsh
+      run: ./scripts/test_add_source.ps1
+
+    - name: Test
+      run: dotnet test -c Release src/Tests -p:TargetFrameworks=${{ matrix.target }}
