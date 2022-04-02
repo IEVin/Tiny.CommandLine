@@ -15,17 +15,24 @@ new CommandLineParser(args, "compose")
     .Option('f', "force", out bool force, "Force override output file if exist")
     .Option("header", out string header, "Path to file with usage and license header")
     .Option("intend", out string intend, "Characters that will be used as indentation", () => "    ")
+    .OptionList<string>('s', "set", out var overrides, "Replace variable to value in a header text", valueName: "name=value")
     .Argument(out string input, "Path to directory with sources", required: true, valueName: "path")
     .Check(() => Directory.Exists(input), $"Directory '{input}' is not found")
     .Check(() => header == null || File.Exists(header), $"Header file '{header}' is not found")
     .Check(() => output == null || force || !File.Exists(output), $"Output file '{output}' is already exist")
     .Run();
 
-ComposeHandler(input, output, header, intend);
+ComposeHandler(input, output, header, intend, overrides);
 
 
-static void ComposeHandler(string input, string output, string header, string intend)
+static void ComposeHandler(string input, string output, string header, string intend, IReadOnlyList<string> overrides)
 {
+    var overridesList = (overrides ?? Array.Empty<string>())
+        .Select(x => x.Split('=', 2, StringSplitOptions.RemoveEmptyEntries))
+        .Where(x => x.Length == 2)
+        .Select(x => ($"$({x[0]})", x[1]))
+        .ToList();
+
     var usingList = new HashSet<string>();
     var sourcesDict = new Dictionary<string, List<string>>();
 
@@ -56,7 +63,9 @@ static void ComposeHandler(string input, string output, string header, string in
         ? File.ReadLines(header)
         : null;
 
-    SaveCombinedContent(output, headerContent, usingList, sourcesDict, intend);
+    SaveCombinedContent(output, headerContent, usingList, sourcesDict, intend, overridesList);
+
+    Console.WriteLine($"Result: {Path.GetFullPath(output)}");
 }
 
 static TValue GetValueOrAddDefault<TKey, TValue>(Dictionary<TKey, TValue> dict, TKey key)
@@ -160,7 +169,8 @@ static int GetIndexOfToken(string line, string value)
     return -1;
 }
 
-static void SaveCombinedContent(string path, IEnumerable<string> headerContent, HashSet<string> usingList, Dictionary<string, List<string>> sourcesDict, ReadOnlySpan<char> intend)
+static void SaveCombinedContent(string path, IEnumerable<string> headerContent, HashSet<string> usingList,
+    Dictionary<string, List<string>> sourcesDict, ReadOnlySpan<char> intend, IReadOnlyList<(string, string)> overrides)
 {
     var outputDir = Path.GetDirectoryName(path);
     if (outputDir != null)
@@ -177,8 +187,17 @@ static void SaveCombinedContent(string path, IEnumerable<string> headerContent, 
     // license and usage header
     if (headerContent != null)
     {
-        foreach (var line in headerContent)
+        foreach (var q in headerContent)
         {
+            var line = q;
+            foreach (var (name, val) in overrides)
+            {
+                if (!line.Contains(name))
+                    continue;
+
+                line = line.Replace(name, val);
+            }
+
             output.WriteLine(line);
         }
 
