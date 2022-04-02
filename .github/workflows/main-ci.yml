@@ -21,10 +21,10 @@ jobs:
       with:
         dotnet-version: 6.0.x
 
-    - name: Build
-      run: dotnet build -c Release
+    - name: Publish nuget
+      run: dotnet build -c Release ./src/TinyCommandLine
 
-    - name: Publish
+    - name: Publish source
       shell: pwsh
       run: ./scripts/publish_source.ps1
 
@@ -43,11 +43,22 @@ jobs:
         include:
           - dotnet: '3.0.x'
             target: 'netcoreapp3.0'
+            type: source
+
           - dotnet: '6.0.x'
             target: 'net6.0'
+            type: source
 
-    name: Test ${{ matrix.target }}
-    runs-on: ubuntu-latest
+          - dotnet: '3.0.x'
+            target: 'netcoreapp3.0'
+            type: nuget
+
+          - dotnet: '6.0.x'
+            target: 'net6.0'
+            type: nuget
+
+    name: Test ${{ matrix.type }} ${{ matrix.target }}
+    runs-on: ubuntu-18.04
     steps:
 
     - name: Checkout
@@ -64,7 +75,13 @@ jobs:
         name: artifacts
         path: build/publish
 
+    - name: Add nuget package
+      if: ${{ matrix.type == 'nuget' }}
+      shell: pwsh
+      run: ./scripts/test_add_nuget.ps1
+
     - name: Add composed source
+      if: ${{ matrix.type == 'source' }}
       shell: pwsh
       run: ./scripts/test_add_source.ps1
 
