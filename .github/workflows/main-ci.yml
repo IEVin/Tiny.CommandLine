@@ -10,7 +10,7 @@ jobs:
     env:
       DOTNET_NOLOGO: true
       DOTNET_CLI_TELEMETRY_OPTOUT: true
-      VERSION_OVERRIDE: '0.1.0'
+      VERSION_OVERRIDE: '0.2.0'
 
     steps:
 
