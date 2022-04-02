@@ -1,6 +1,6 @@
 using System;
 
-namespace Tiny.CommandLine.Sample
+namespace Tiny.CommandLine.Example
 {
     public class TestCommand
     {

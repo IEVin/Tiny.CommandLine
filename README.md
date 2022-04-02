@@ -21,7 +21,7 @@ Usage
 ```CSharp
 using Tiny.CommandLine;
 
-new CommandLineParser(args, "sample")
+new CommandLineParser(args, "example")
     .Option('i', "input", out string input, "The path to input file", required: true)
     .Option("output", out string output, "The path to output file")
     .Run();
@@ -40,7 +40,7 @@ Usage: example [-i <value>] --output <value>
     --output                The path to output file
 ```
 
-To see a detailed example with all features take a look at [src/Sample/Program.cs](https://github.com/IEVin/Tiny.CommandLine/blob/master/src/Sample/Program.cs).
+To see a detailed example with all features take a look at [src/Example/Program.cs](https://github.com/IEVin/Tiny.CommandLine/blob/master/src/Example/Program.cs).
 
 ### Supported features
 - Options (with names and/or alias) and arguments

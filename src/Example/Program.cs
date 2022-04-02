@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Tiny.CommandLine;
-using Tiny.CommandLine.Sample;
+using Tiny.CommandLine.Example;
 
 
-new CommandLineParser(args, "sample", "This sample is some variation of 'echo'")
+new CommandLineParser(args, "example", "This example is some variation of 'echo'")
     // Firstly should be declared global options. This options must not be repeated in sub-commands
     .Option('v', "verbose", out bool verbose, "Be more verbose")
 
@@ -26,7 +26,7 @@ new CommandLineParser(args, "sample", "This sample is some variation of 'echo'")
     )
 
     // Params structure can be created in all places
-    .Variable(out var prm, new SampleArguments())
+    .Variable(out var prm, new ExampleArguments())
 
     // Further should be declared command specific options
     .Option('f', out bool force, "Override output file")
@@ -48,17 +48,17 @@ new CommandLineParser(args, "sample", "This sample is some variation of 'echo'")
     // Finally after all parser should invoke Run (or GetResult)
     .Run();
 
-SampleHandler(prm, text);
+ExampleHandler(prm, text);
 
 
 static void ShowVersion(bool verbose)
 {
     if (verbose)
-        Console.Write("sample version ");
+        Console.Write("example version ");
     Console.WriteLine("0.0.1");
 }
 
-static void SampleHandler(SampleArguments args, string content)
+static void ExampleHandler(ExampleArguments args, string content)
 {
     // ... implementation ...
 
@@ -66,7 +66,7 @@ static void SampleHandler(SampleArguments args, string content)
 }
 
 
-class SampleArguments
+class ExampleArguments
 {
     public string OutputPath;
 

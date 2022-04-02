@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
-    <BaseIntermediateOutputPath>..\..\build\obj\Sample</BaseIntermediateOutputPath>
-    <OutputPath>..\..\build\bin\Sample\$(Configuration)</OutputPath>
+    <BaseIntermediateOutputPath>..\..\build\obj\Example</BaseIntermediateOutputPath>
+    <OutputPath>..\..\build\bin\Example\$(Configuration)</OutputPath>
   </PropertyGroup>
 
   <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.props" />
@@ -9,8 +9,8 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
-    <RootNamespace>Tiny.CommandLine.Sample</RootNamespace>
-    <AssemblyName>Tiny.CommandLine.Sample</AssemblyName>
+    <RootNamespace>Tiny.CommandLine.Example</RootNamespace>
+    <AssemblyName>Tiny.CommandLine.Example</AssemblyName>
   </PropertyGroup>
 
   <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" />
