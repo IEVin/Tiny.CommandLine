@@ -14,13 +14,13 @@ namespace Tiny.CommandLine.Tests
             var res = CreateParser(cmd)
                 .Command("test", null, b =>
                 {
-                    var res = b.GetResult();
-                    Assert.IsFalse(res);
+                    var res1 = b.GetResult();
+                    Assert.IsFalse(res1);
                 })
                 .Command("cmd", null, b =>
                 {
-                    var res = b.GetResult();
-                    Assert.IsTrue(res);
+                    var res1 = b.GetResult();
+                    Assert.IsTrue(res1);
                     cmdInvoked = true;
                 })
                 .GetResult();
@@ -37,8 +37,8 @@ namespace Tiny.CommandLine.Tests
                 .Option("flag", out bool flag)
                 .Command("cmd", null, b =>
                 {
-                    var res = b.GetResult();
-                    Assert.IsTrue(res);
+                    var res1 = b.GetResult();
+                    Assert.IsTrue(res1);
 
                     invokedFlag = flag;
                 })
@@ -56,16 +56,16 @@ namespace Tiny.CommandLine.Tests
             var res = CreateParser(cmd)
                 .Command("cmd", null, b =>
                 {
-                    var res = b
+                    var res1 = b
                         .Command("sub", null, s =>
                         {
-                            var res = s.GetResult();
-                            Assert.IsTrue(res);
+                            var res2 = s.GetResult();
+                            Assert.IsTrue(res2);
                             cmdInvoked = true;
                         })
                         .GetResult();
 
-                    Assert.IsFalse(res);
+                    Assert.IsFalse(res1);
                 })
                 .GetResult();
 
@@ -82,11 +82,11 @@ namespace Tiny.CommandLine.Tests
                 .Option("test", out bool _)
                 .Command("cmd", null, b =>
                 {
-                    var res = b
+                    var res1 = b
                         .Option('f', out bool innerFlag)
                         .GetResult();
 
-                    Assert.IsTrue(res);
+                    Assert.IsTrue(res1);
                     Assert.IsTrue(innerFlag);
                     cmdInvoked = true;
                 })

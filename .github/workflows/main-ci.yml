@@ -41,16 +41,16 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - dotnet: '3.0.x'
-            target: 'netcoreapp3.0'
+          - dotnet: '2.1.x'
+            target: 'netcoreapp2.1'
             type: source
 
           - dotnet: '6.0.x'
             target: 'net6.0'
             type: source
 
-          - dotnet: '3.0.x'
-            target: 'netcoreapp3.0'
+          - dotnet: '2.0.x'
+            target: 'netcoreapp2.0'
             type: nuget
 
           - dotnet: '6.0.x'
