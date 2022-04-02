@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
-    <BaseIntermediateOutputPath>..\..\build\obj\TinyCommandLine</BaseIntermediateOutputPath>
-    <OutputPath>..\..\build\bin\TinyCommandLine\$(Configuration)</OutputPath>
+    <BaseIntermediateOutputPath>..\..\build\obj\Tiny.CommandLine</BaseIntermediateOutputPath>
+    <OutputPath>..\..\build\bin\Tiny.CommandLine\$(Configuration)</OutputPath>
     <PackageOutputPath>..\..\build\publish</PackageOutputPath>
   </PropertyGroup>
 
@@ -20,12 +20,12 @@
   <PropertyGroup>
     <PackageId>Tiny.CommandLine</PackageId>
     <Title>Tiny Command Line Parser</Title>
-    <Description>A Tiny Command Line parser for C#. Short python-like API, no dependencies, no reflection</Description>
+    <Description>The Tiny Command Line parser for C#. Short python-like API, no dependencies, no reflection</Description>
     <PackageTags>tiny command line commandline argument option parser parsing syntax cli</PackageTags>
     <Authors>IEVin</Authors>
     <Copyright>Copyright 2022 Ivan Vinogradov</Copyright>
-    <PackageProjectUrl>https://github.com/IEVin/TinyCommandLine</PackageProjectUrl>
-    <PackageReleaseNotes>https://github.com/IEVin/TinyCommandLine/releases/tag/release/v$(Version)</PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/IEVin/Tiny.CommandLine</PackageProjectUrl>
+    <PackageReleaseNotes>https://github.com/IEVin/Tiny.CommandLine/releases/tag/release/v$(Version)</PackageReleaseNotes>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IncludeSymbols>true</IncludeSymbols>

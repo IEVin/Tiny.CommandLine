@@ -1,18 +1,18 @@
-TinyCommandLine [![Build Status](https://github.com/IEVin/TinyCommandLine/actions/workflows/main-ci.yml/badge.svg)](https://github.com/IEVin/TinyCommandLine/actions/workflows/main-ci.yml)[![Nuget](https://img.shields.io/nuget/v/Tiny.CommandLine)](https://www.nuget.org/packages/Tiny.CommandLine)
+Tiny.CommandLine [![Build Status](https://github.com/IEVin/Tiny.CommandLine/actions/workflows/main-ci.yml/badge.svg)](https://github.com/IEVin/Tiny.CommandLine/actions/workflows/main-ci.yml)[![Nuget](https://img.shields.io/nuget/v/Tiny.CommandLine)](https://www.nuget.org/packages/Tiny.CommandLine)
 =====================
 
-The **TinyCommandLine** is a small but full-featured command line parser for C#. 
+The **Tiny Command Line** is a small but full-featured command line parser for C#. 
 
 ### Key features
 - Compact python-like API
 - No depedencies
 - No reflection (no hidden metadata usage in `System.Convert` and others)
-- Single file distribution ([**Tiny.CommandLine.cs**](https://github.com/IEVin/TinyCommandLine/releases/latest/download/Tiny.CommandLine.cs) published with [releases](https://github.com/IEVin/TinyCommandLine/releases/))
+- Single file distribution ([**Tiny.CommandLine.cs**](https://github.com/IEVin/Tiny.CommandLine/releases/latest/download/Tiny.CommandLine.cs) published with [releases](https://github.com/IEVin/Tiny.CommandLine/releases/))
 
 Why another one parser?
 ---------------------
 Most console applications require only a small number of parameters. In this case declaring a bulky structure with attributes would be redundant.
-**TinyCommandLine** uses a simple python-like syntax that allows to declare one commandline argument in one line.
+The **Tiny Command Line** uses a simple python-like syntax that allows to declare one commandline argument in one line.
 It also don't use reflection and helps to avoid problems with trimming application and compiling to the native view.
 
 Usage
@@ -40,7 +40,7 @@ Usage: example [-i <value>] --output <value>
     --output                The path to output file
 ```
 
-To see a detailed example with all features take a look at [src/Sample/Program.cs](https://github.com/IEVin/TinyCommandLine/blob/master/src/Sample/Program.cs).
+To see a detailed example with all features take a look at [src/Sample/Program.cs](https://github.com/IEVin/Tiny.CommandLine/blob/master/src/Sample/Program.cs).
 
 ### Supported features
 - Options (with names and/or alias) and arguments

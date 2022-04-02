@@ -23,7 +23,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\TinyCommandLine\TinyCommandLine.csproj" />
+    <ProjectReference Include="..\..\Tiny.CommandLine\Tiny.CommandLine.csproj" />
   </ItemGroup>
 
 </Project>

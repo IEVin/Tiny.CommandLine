@@ -16,6 +16,6 @@
   <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" />
 
   <ItemGroup>
-    <ProjectReference Include="..\TinyCommandLine\TinyCommandLine.csproj" />
+    <ProjectReference Include="..\Tiny.CommandLine\Tiny.CommandLine.csproj" />
   </ItemGroup>
 </Project>
