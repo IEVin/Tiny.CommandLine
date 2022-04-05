@@ -124,7 +124,7 @@ namespace Tiny.CommandLine.Implementation
             }
         }
 
-        string GetOptionName(Option desc, int argumentNum, bool shortForm)
+        string GetOptionName(Option desc, int argumentNum, bool syntax)
         {
             // format "   -a, --name <value>"
             var len = 12 + (desc.Name?.Length ?? 0) + (desc.ValueName?.Length ?? 0);
@@ -149,27 +149,24 @@ namespace Tiny.CommandLine.Implementation
                 sb.Append(desc.Alias);
             }
 
-            if (desc.Name != Constants.NoName && (!shortForm || sb.Length == 0))
+            if (desc.Name != Constants.NoName)
             {
                 if (sb.Length != 0)
-                    sb.Append(", ");
+                    sb.Append(syntax ? "|" : ", ");
 
                 sb.Append("--");
                 sb.Append(desc.Name);
             }
 
-            if (!desc.IsFlag)
+            if (!desc.IsFlag && (syntax || desc.ValueName != null))
             {
-                if (shortForm || desc.ValueName != null)
-                {
-                    var value = desc.ValueName ?? "value";
-                    sb.Append(" <");
-                    sb.Append(value);
-                    sb.Append('>');
+                var value = desc.ValueName ?? "value";
+                sb.Append(" <");
+                sb.Append(value);
+                sb.Append('>');
 
-                    if (desc.IsList)
-                        sb.Append("...");
-                }
+                if (desc.IsList)
+                    sb.Append("...");
             }
 
             return sb.ToString();
