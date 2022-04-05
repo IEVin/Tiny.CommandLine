@@ -11,13 +11,17 @@ namespace Tiny.CommandLine.Implementation
         readonly TextWriter _writer;
 
         readonly int _outputWidth;
-        readonly int _alignSize;
+        readonly int _optionAlign;
+        readonly int _commandAlign;
 
-        public DefaultHelpBuilder(TextWriter writer, int alignSize)
+        public DefaultHelpBuilder(TextWriter writer, int commandAlign, int optionAlign)
         {
+            var alignSize = Math.Max(optionAlign, commandAlign);
+
             _writer = writer;
             _outputWidth = Console.IsOutputRedirected ? int.MaxValue : Math.Max(alignSize, Console.WindowWidth);
-            _alignSize = Math.Min(alignSize, _outputWidth - 5);
+            _optionAlign = Math.Min(optionAlign, _outputWidth - 5);
+            _commandAlign = Math.Min(commandAlign, _outputWidth - 5);
 
             _align = new char[alignSize];
             for (int i = 0; i < _align.Length; i++)
@@ -96,7 +100,7 @@ namespace Tiny.CommandLine.Implementation
 
             foreach (var desc in commands)
             {
-                PrintValue(desc.Name, desc.HelpText, 2);
+                PrintValue(desc.Name, desc.HelpText, _commandAlign, 2);
             }
 
             Console.WriteLine();
@@ -116,7 +120,7 @@ namespace Tiny.CommandLine.Implementation
                 }
 
                 string name = GetOptionName(desc, argumentNum, false);
-                PrintValue(name, desc.HelpText, 4);
+                PrintValue(name, desc.HelpText, _optionAlign, 4);
             }
         }
 
@@ -172,11 +176,11 @@ namespace Tiny.CommandLine.Implementation
             return sb.ToString();
         }
 
-        void PrintValue(string name, string helpText, int intend)
+        void PrintValue(string name, string helpText, int alignSize, int indentSize)
         {
-            const int intendBetweenNameAndText = 2;
+            const int minIndentToHelpText = 2;
 
-            _writer.Write(_align, 0, intend);
+            _writer.Write(_align, 0, indentSize);
             _writer.Write(name);
 
             if (string.IsNullOrEmpty(helpText))
@@ -185,27 +189,27 @@ namespace Tiny.CommandLine.Implementation
                 return;
             }
 
-            var currentAlign = _alignSize - intend - name.Length - intendBetweenNameAndText;
+            var currentAlign = alignSize - indentSize - name.Length - minIndentToHelpText;
             if (currentAlign <= 0)
             {
                 _writer.WriteLine();
-                currentAlign = _alignSize;
+                currentAlign = alignSize;
             }
 
             int partLen;
             for (int i = 0; i < helpText.Length; i += partLen)
             {
                 _writer.Write(_align, 0, currentAlign);
-                currentAlign = _alignSize;
+                currentAlign = alignSize;
 
-                partLen = GetNextWrappedPartLength(helpText, i);
+                partLen = GetNextWrappedPartLength(helpText, alignSize, i);
                 _writer.WriteLine(helpText.AsSpan(i, partLen));
             }
         }
 
-        int GetNextWrappedPartLength(string str, int index)
+        int GetNextWrappedPartLength(string str, int alignSize, int index)
         {
-            var totalLen = _outputWidth - _alignSize - 1;
+            var totalLen = _outputWidth - alignSize - 1;
             var len = str.Length - index;
             if (len <= totalLen)
                 return len;

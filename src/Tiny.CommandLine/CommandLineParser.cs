@@ -187,7 +187,7 @@ namespace Tiny.CommandLine
             var output = _result == ParserResult.State.Error ? Console.Error : Console.Out;
 
             // TODO: Add feature to change help builder from config
-            var helpBuilder = new DefaultHelpBuilder(output, 40);
+            var helpBuilder = new DefaultHelpBuilder(output, 20, 40);
             _helpCollector.Show(helpBuilder);
         }
 
