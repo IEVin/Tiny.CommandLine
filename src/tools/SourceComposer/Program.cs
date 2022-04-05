@@ -14,7 +14,7 @@ new CommandLineParser(args, "compose")
     .Option('o', "output", out string output, "Path to output file with combined sources")
     .Option('f', "force", out bool force, "Force override output file if exist")
     .Option("header", out string header, "Path to file with usage and license header")
-    .Option("intend", out string intend, "Characters that will be used as indentation", () => "    ")
+    .Option("indent", out string indent, "Characters that will be used as indentation", () => "    ")
     .OptionList<string>('s', "set", out var overrides, "Replace variable to value in a header text", valueName: "name=value")
     .Argument(out string input, "Path to directory with sources", required: true, valueName: "path")
     .Check(() => Directory.Exists(input), $"Directory '{input}' is not found")
@@ -22,10 +22,10 @@ new CommandLineParser(args, "compose")
     .Check(() => output == null || force || !File.Exists(output), $"Output file '{output}' is already exist")
     .Run();
 
-ComposeHandler(input, output, header, intend, overrides);
+ComposeHandler(input, output, header, indent, overrides);
 
 
-static void ComposeHandler(string input, string output, string header, string intend, IReadOnlyList<string> overrides)
+static void ComposeHandler(string input, string output, string header, string indent, IReadOnlyList<string> overrides)
 {
     var overridesList = (overrides ?? Array.Empty<string>())
         .Select(x => x.Split('=', 2, StringSplitOptions.RemoveEmptyEntries))
@@ -63,7 +63,7 @@ static void ComposeHandler(string input, string output, string header, string in
         ? File.ReadLines(header)
         : null;
 
-    SaveCombinedContent(output, headerContent, usingList, sourcesDict, intend, overridesList);
+    SaveCombinedContent(output, headerContent, usingList, sourcesDict, indent, overridesList);
 
     Console.WriteLine($"Result: {Path.GetFullPath(output)}");
 }
@@ -170,7 +170,7 @@ static int GetIndexOfToken(string line, string value)
 }
 
 static void SaveCombinedContent(string path, IEnumerable<string> headerContent, HashSet<string> usingList,
-    Dictionary<string, List<string>> sourcesDict, ReadOnlySpan<char> intend, IReadOnlyList<(string, string)> overrides)
+    Dictionary<string, List<string>> sourcesDict, ReadOnlySpan<char> indent, IReadOnlyList<(string, string)> overrides)
 {
     var outputDir = Path.GetDirectoryName(path);
     if (outputDir != null)
@@ -211,11 +211,11 @@ static void SaveCombinedContent(string path, IEnumerable<string> headerContent, 
         output.WriteLine($"using {token};");
     }
 
-    using var owner = MemoryPool<char>.Shared.Rent(intend.Length * 10);
+    using var owner = MemoryPool<char>.Shared.Rent(indent.Length * 10);
     var buffer = owner.Memory.Span;
     for (int i = 0; i < maxNestedNameSpaceLevel; i++)
     {
-        intend.CopyTo(buffer.Slice(i * intend.Length));
+        indent.CopyTo(buffer.Slice(i * indent.Length));
     }
 
     var nestedNs = new Stack<string>();
@@ -233,26 +233,26 @@ static void SaveCombinedContent(string path, IEnumerable<string> headerContent, 
                 break;
             }
 
-            output.Write(buffer.Slice(0, nestedNs.Count * intend.Length));
+            output.Write(buffer.Slice(0, nestedNs.Count * indent.Length));
             output.WriteLine('}');
             nestedNs.Pop();
         }
 
-        var currentIntend = buffer.Slice(0, nestedNs.Count * intend.Length);
+        var currentIndent = buffer.Slice(0, nestedNs.Count * indent.Length);
 
         output.WriteLine();
         output.WriteLine();
 
-        output.Write(currentIntend);
+        output.Write(currentIndent);
         output.WriteLine($"namespace {ns}");
 
-        output.Write(currentIntend);
+        output.Write(currentIndent);
         output.WriteLine('{');
 
         foreach (var content in item.Value)
         {
             if (content.Length > 0)
-                output.Write(currentIntend);
+                output.Write(currentIndent);
 
             output.WriteLine(content);
         }
@@ -262,7 +262,7 @@ static void SaveCombinedContent(string path, IEnumerable<string> headerContent, 
 
     for (int i = nestedNs.Count - 1; i >= 0; i--)
     {
-        output.Write(buffer.Slice(0, i * intend.Length));
+        output.Write(buffer.Slice(0, i * indent.Length));
         output.WriteLine('}');
     }
 
