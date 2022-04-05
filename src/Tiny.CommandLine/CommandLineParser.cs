@@ -70,7 +70,7 @@ namespace Tiny.CommandLine
         {
             if (!TryCollectHelp<T>(alias, name, helpText, required, valueName, hidden, true))
             {
-                value = default;
+                value = Array.Empty<T>();
                 return this;
             }
 
@@ -98,7 +98,7 @@ namespace Tiny.CommandLine
         {
             if (!TryCollectHelp<T>(Constants.NoAlias, Constants.NoName, helpText, required, valueName, hidden, true))
             {
-                value = default;
+                value = Array.Empty<T>();
                 return this;
             }
 

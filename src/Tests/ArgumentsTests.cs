@@ -49,17 +49,20 @@ namespace Tiny.CommandLine.Tests
             Assert.AreEqual(list[2], "-91");
         }
 
-        [TestCase("")]
-        [TestCase("-v")]
-        public void Argument_list_default_should_be_empty_list(string cmd)
+        [TestCase("", ExpectedResult = ParserResult.State.Success)]
+        [TestCase("-v", ExpectedResult = ParserResult.State.Success)]
+        [TestCase("-v=aaa", ExpectedResult = ParserResult.State.Error)]
+        [TestCase("-h", ExpectedResult = ParserResult.State.HelpRequired)]
+        public ParserResult.State Argument_list_default_should_be_empty_list(string cmd)
         {
-            CreateParser(cmd)
+            var res = CreateParser(cmd)
                 .Option('v', out bool _)
                 .ArgumentList<string>(out var list)
-                .Run();
+                .GetResult();
 
             Assert.NotNull(list);
             Assert.NotNull(list.Count == 0);
+            return res;
         }
     }
 }

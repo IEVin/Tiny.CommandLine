@@ -116,17 +116,20 @@ namespace Tiny.CommandLine.Tests
             Assert.AreEqual(res.Result, ParserResult.State.Error);
         }
 
-        [TestCase("")]
-        [TestCase("-v")]
-        public void Option_list_default_should_be_empty_list(string cmd)
+        [TestCase("", ExpectedResult = ParserResult.State.Success)]
+        [TestCase("-v", ExpectedResult = ParserResult.State.Success)]
+        [TestCase("-v=aaa", ExpectedResult = ParserResult.State.Error)]
+        [TestCase("-h", ExpectedResult = ParserResult.State.HelpRequired)]
+        public ParserResult.State Option_list_default_should_be_empty_list(string cmd)
         {
-            CreateParser(cmd)
+            var res = CreateParser(cmd)
                 .Option('v', out bool _)
                 .OptionList<string>('l', out var list)
-                .Run();
+                .GetResult();
 
             Assert.NotNull(list);
             Assert.NotNull(list.Count == 0);
+            return res;
         }
 
         [TestCase("--number")]

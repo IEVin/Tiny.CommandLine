@@ -75,7 +75,7 @@ namespace Tiny.CommandLine.Implementation
 
             return required
                 ? SetErrorOptionRequired<IReadOnlyList<T>>(alias, name)
-                : (valueDefault != null ? valueDefault() : list);
+                : (valueDefault != null ? valueDefault() : Array.Empty<T>());
         }
 
         public T Argument<T>(Func<T> valueDefault, bool required, string valueName)
@@ -101,7 +101,7 @@ namespace Tiny.CommandLine.Implementation
 
             return required
                 ? SetErrorArgumentRequired<IReadOnlyList<T>>(valueName)
-                : (valueDefault != null ? valueDefault() : list);
+                : (valueDefault != null ? valueDefault() : Array.Empty<T>());
         }
 
         bool TryGetArgument<T>(out T value, string valueName)
