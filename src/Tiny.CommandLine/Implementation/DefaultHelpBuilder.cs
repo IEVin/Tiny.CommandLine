@@ -189,8 +189,8 @@ namespace Tiny.CommandLine.Implementation
                 return;
             }
 
-            var currentAlign = alignSize - indentSize - name.Length - minIndentToHelpText;
-            if (currentAlign <= 0)
+            var currentAlign = alignSize - indentSize - name.Length;
+            if (currentAlign <= minIndentToHelpText)
             {
                 _writer.WriteLine();
                 currentAlign = alignSize;
