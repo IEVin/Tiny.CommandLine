@@ -165,11 +165,10 @@ namespace Tiny.CommandLine.Implementation
                     var value = desc.ValueName ?? "value";
                     sb.Append(" <");
                     sb.Append(value);
+                    sb.Append('>');
 
                     if (desc.IsList)
                         sb.Append("...");
-
-                    sb.Append('>');
                 }
             }
 
