@@ -129,6 +129,26 @@ namespace Tiny.CommandLine.Tests
             Assert.NotNull(list.Count == 0);
         }
 
+        [TestCase("--number")]
+        public void Option_without_value_should_return_error(string cmd)
+        {
+            var res = CreateParser(cmd)
+                .Option("number", out int _)
+                .GetResult();
+
+            Assert.AreEqual(res.Result, ParserResult.State.Error);
+        }
+
+        [TestCase("--number aaa")]
+        public void Option_invalid_value_should_return_error(string cmd)
+        {
+            var res = CreateParser(cmd)
+                .Option("number", out int _)
+                .GetResult();
+
+            Assert.AreEqual(res.Result, ParserResult.State.Error);
+        }
+
         static T ParseOption<T>(string cmd)
         {
             T result = default;

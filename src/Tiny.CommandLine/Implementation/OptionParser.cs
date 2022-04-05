@@ -155,7 +155,7 @@ namespace Tiny.CommandLine.Implementation
             if (Converter<T>.TryParse(valueToken, out var value))
                 return value;
 
-            SetParseError(_tokens[optionIndex].Remove(optionLength));
+            SetParseError(_tokens[optionIndex].Substring(0, optionLength));
             return default;
         }
 
