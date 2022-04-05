@@ -37,6 +37,8 @@ static void ComposeHandler(string input, string output, string header, string in
     var sourcesDict = new Dictionary<string, List<string>>();
 
     var sources = Directory.GetFiles(input, "*.cs", SearchOption.AllDirectories);
+    Array.Sort(sources);
+
     foreach (var path in sources)
     {
         ParseSourceFile(path, out var nsName, out var content, usingList);
