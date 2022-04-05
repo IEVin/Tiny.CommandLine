@@ -48,5 +48,18 @@ namespace Tiny.CommandLine.Tests
             Assert.AreEqual(list[1], "_1)");
             Assert.AreEqual(list[2], "-91");
         }
+
+        [TestCase("")]
+        [TestCase("-v")]
+        public void Argument_list_default_should_be_empty_list(string cmd)
+        {
+            CreateParser(cmd)
+                .Option('v', out bool _)
+                .ArgumentList<string>(out var list)
+                .Run();
+
+            Assert.NotNull(list);
+            Assert.NotNull(list.Count == 0);
+        }
     }
 }

@@ -50,14 +50,14 @@ namespace Tiny.CommandLine.Implementation
 
             return required
                 ? SetErrorOptionRequired<T>(alias, name)
-                : GetDefault(valueDefault);
+                : (valueDefault != null ? valueDefault() : default);
         }
 
         public IReadOnlyList<T> OptionList<T>(char alias, string name, Func<IReadOnlyList<T>> valueDefault, bool required)
         {
             var itr = _tokens.IterateOptions(alias, name);
 
-            var result = new List<T>();
+            var list = new List<T>();
             while (itr.TryMoveNext(out var index, out var length))
             {
                 if (!TryGetOptionValueToken<T>(index, length, out var valueToken))
@@ -67,15 +67,15 @@ namespace Tiny.CommandLine.Implementation
                 if (_error != null)
                     return default;
 
-                result.Add(optionValue);
+                list.Add(optionValue);
             }
 
-            if (result.Count > 0)
-                return result;
+            if (list.Count > 0)
+                return list;
 
             return required
                 ? SetErrorOptionRequired<IReadOnlyList<T>>(alias, name)
-                : GetDefault(valueDefault);
+                : (valueDefault != null ? valueDefault() : list);
         }
 
         public T Argument<T>(Func<T> valueDefault, bool required, string valueName)
@@ -85,7 +85,7 @@ namespace Tiny.CommandLine.Implementation
 
             return required
                 ? SetErrorArgumentRequired<T>(valueName)
-                : GetDefault(valueDefault);
+                : valueDefault != null ? valueDefault() : default;
         }
 
         public IReadOnlyList<T> ArgumentList<T>(Func<IReadOnlyList<T>> valueDefault, bool required, string valueName)
@@ -101,7 +101,7 @@ namespace Tiny.CommandLine.Implementation
 
             return required
                 ? SetErrorArgumentRequired<IReadOnlyList<T>>(valueName)
-                : GetDefault(valueDefault);
+                : (valueDefault != null ? valueDefault() : list);
         }
 
         bool TryGetArgument<T>(out T value, string valueName)
@@ -175,8 +175,6 @@ namespace Tiny.CommandLine.Implementation
         }
 
         public void SetError(string error) => _error = error;
-
-        public T GetDefault<T>(Func<T> valueDefault) => valueDefault != null ? valueDefault() : default;
 
         public void Finish()
         {

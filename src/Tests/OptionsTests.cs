@@ -116,6 +116,19 @@ namespace Tiny.CommandLine.Tests
             Assert.AreEqual(res.Result, ParserResult.State.Error);
         }
 
+        [TestCase("")]
+        [TestCase("-v")]
+        public void Option_list_default_should_be_empty_list(string cmd)
+        {
+            CreateParser(cmd)
+                .Option('v', out bool _)
+                .OptionList<string>('l', out var list)
+                .Run();
+
+            Assert.NotNull(list);
+            Assert.NotNull(list.Count == 0);
+        }
+
         static T ParseOption<T>(string cmd)
         {
             T result = default;
