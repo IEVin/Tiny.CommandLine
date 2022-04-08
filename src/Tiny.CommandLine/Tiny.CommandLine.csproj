@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <PropertyGroup>
     <BaseIntermediateOutputPath>..\..\build\obj\Tiny.CommandLine</BaseIntermediateOutputPath>
     <OutputPath>..\..\build\bin\Tiny.CommandLine\$(Configuration)</OutputPath>
@@ -29,9 +29,14 @@
     <PackageReleaseNotes>https://github.com/IEVin/Tiny.CommandLine/releases/tag/release/v$(Version)</PackageReleaseNotes>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageIcon>icon.png</PackageIcon>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\icon.png" Pack="true" Visible="false" PackagePath=""/>
+  </ItemGroup>
 
   <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" />
 
