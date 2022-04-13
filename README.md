@@ -1,4 +1,7 @@
-Tiny.CommandLine [![Build Status](https://github.com/IEVin/Tiny.CommandLine/actions/workflows/main-ci.yml/badge.svg)](https://github.com/IEVin/Tiny.CommandLine/actions/workflows/main-ci.yml)[![Nuget](https://img.shields.io/nuget/v/Tiny.CommandLine)](https://www.nuget.org/packages/Tiny.CommandLine)
+Tiny.CommandLine
+[![build](https://github.com/IEVin/Tiny.CommandLine/actions/workflows/main-ci.yml/badge.svg)](https://github.com/IEVin/Tiny.CommandLine/actions/workflows/main-ci.yml)
+[![codecov](https://codecov.io/gh/IEVin/Tiny.CommandLine/branch/master/graph/badge.svg)](https://codecov.io/gh/IEVin/Tiny.CommandLine)
+[![nuget](https://img.shields.io/nuget/v/Tiny.CommandLine)](https://www.nuget.org/packages/Tiny.CommandLine)
 =====================
 
 The **Tiny Command Line** is a small but full-featured command line parser for C#. 
