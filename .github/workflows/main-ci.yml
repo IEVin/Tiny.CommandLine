@@ -1,16 +1,16 @@
 name: main-ci
 on: [push, pull_request]
 
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  VERSION_OVERRIDE: '0.2.0'
+
 jobs:
 
   build:
     name: Build-Publish
     runs-on: ubuntu-latest
-
-    env:
-      DOTNET_NOLOGO: true
-      DOTNET_CLI_TELEMETRY_OPTOUT: true
-      VERSION_OVERRIDE: '0.2.0'
 
     steps:
 
@@ -28,6 +28,14 @@ jobs:
     - name: Publish source
       shell: pwsh
       run: ./scripts/publish_source.ps1
+
+    - name: Collect coverage
+      run: dotnet test src/Tests --collect "XPlat Code Coverage" -r ./build/test_result/
+
+    - name: Upload coverage
+      uses: codecov/codecov-action@v2
+      with:
+        directory: ./build/test_result/
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
