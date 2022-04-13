@@ -1,3 +1,5 @@
+using System;
+using System.IO;
 using NUnit.Framework;
 using static Tiny.CommandLine.Tests.Helper;
 
@@ -6,6 +8,13 @@ namespace Tiny.CommandLine.Tests
     [TestFixture]
     public class CommandsTests
     {
+        [OneTimeSetUp]
+        protected void SetUp()
+        {
+            Console.SetError(TextWriter.Null);
+            Console.SetOut(TextWriter.Null);
+        }
+
         [TestCase("cmd")]
         public void Only_specified_command_should_be_invoked(string cmd)
         {

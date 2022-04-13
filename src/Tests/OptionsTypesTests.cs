@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using NUnit.Framework;
 using static Tiny.CommandLine.Tests.Helper;
 
@@ -7,6 +8,13 @@ namespace Tiny.CommandLine.Tests
     [TestFixture]
     public class OptionsTypesTests
     {
+        [OneTimeSetUp]
+        protected void SetUp()
+        {
+            Console.SetError(TextWriter.Null);
+            Console.SetOut(TextWriter.Null);
+        }
+
         [TestCase("-v \"test\"", ExpectedResult = "test")]
         [TestCase("--value=\"test\"", ExpectedResult = "test")]
         public string String_values_should_be_parsed(string cmd) => ParseOption<string>(cmd);

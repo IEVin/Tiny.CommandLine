@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
 using NUnit.Framework;
 using static Tiny.CommandLine.Tests.Helper;
 
@@ -7,6 +9,13 @@ namespace Tiny.CommandLine.Tests
     [TestFixture]
     public class ArgumentsTests
     {
+        [OneTimeSetUp]
+        protected void SetUp()
+        {
+            Console.SetError(TextWriter.Null);
+            Console.SetOut(TextWriter.Null);
+        }
+
         [TestCase("test2", ExpectedResult = "test2|")]
         [TestCase("arg1 arg2", ExpectedResult = "arg1|arg2")]
         public string Arguments_should_be_parsed_correctly(string cmd)

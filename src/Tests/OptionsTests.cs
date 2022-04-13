@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
 using NUnit.Framework;
 using static Tiny.CommandLine.Tests.Helper;
 
@@ -7,6 +9,13 @@ namespace Tiny.CommandLine.Tests
     [TestFixture]
     public class OptionsTests
     {
+        [OneTimeSetUp]
+        protected void SetUp()
+        {
+            Console.SetError(TextWriter.Null);
+            Console.SetOut(TextWriter.Null);
+        }
+
         [TestCase("-v=val")]
         [TestCase("--value=val")]
         public void Value_can_be_separated_by_equal(string cmd) => Assert.AreEqual("val", ParseOption<string>(cmd));
