@@ -61,11 +61,11 @@ namespace Tiny.CommandLine.Implementation
             while (itr.TryMoveNext(out var index, out var length))
             {
                 if (!TryGetOptionValueToken<T>(index, length, out var valueToken))
-                    return default;
+                    return Array.Empty<T>();
 
                 var optionValue = GetOptionValue<T>(valueToken, index, length);
                 if (_error != null)
-                    return default;
+                    return Array.Empty<T>();
 
                 list.Add(optionValue);
             }
