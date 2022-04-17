@@ -137,7 +137,7 @@ namespace Tiny.CommandLine.Tests
                 .GetResult();
 
             Assert.NotNull(list);
-            Assert.NotNull(list.Count == 0);
+            Assert.IsTrue(list.Count == 0);
             return res;
         }
 
@@ -152,10 +152,37 @@ namespace Tiny.CommandLine.Tests
         }
 
         [TestCase("--number aaa")]
+        [TestCase("--number")]
         public void Option_invalid_value_should_return_error(string cmd)
         {
             var res = CreateParser(cmd)
-                .Option("number", out int _)
+                .Option("number", out int value)
+                .GetResult();
+
+            Assert.AreEqual(res.Result, ParserResult.State.Error);
+            Assert.AreEqual(value, default(int));
+        }
+
+        [TestCase("--number aaa")]
+        [TestCase("--number")]
+        public void Option_list_invalid_value_should_return_error(string cmd)
+        {
+            var res = CreateParser(cmd)
+                .OptionList<int>("number", out var list)
+                .GetResult();
+
+            Assert.AreEqual(res.Result, ParserResult.State.Error);
+            Assert.NotNull(list);
+            Assert.IsTrue(list.Count == 0);
+        }
+
+        [TestCase("")]
+        [TestCase("-f")]
+        public void Required_option_should_return_error_if_missing(string cmd)
+        {
+            var res = CreateParser(cmd)
+                .Option('f', out bool _)
+                .Option("val", out int _, required: true)
                 .GetResult();
 
             Assert.AreEqual(res.Result, ParserResult.State.Error);

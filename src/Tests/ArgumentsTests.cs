@@ -70,8 +70,54 @@ namespace Tiny.CommandLine.Tests
                 .GetResult();
 
             Assert.NotNull(list);
-            Assert.NotNull(list.Count == 0);
+            Assert.IsTrue(list.Count == 0);
             return res;
+        }
+
+        [TestCase("aaa")]
+        public void Argument_invalid_value_should_return_error(string cmd)
+        {
+            var res = CreateParser(cmd)
+                .Argument(out int value)
+                .GetResult();
+
+            Assert.AreEqual(res.Result, ParserResult.State.Error);
+            Assert.AreEqual(value, default(int));
+        }
+
+        [TestCase("bbb")]
+        public void Argument_list_invalid_value_should_return_error(string cmd)
+        {
+            var res = CreateParser(cmd)
+                .ArgumentList<int>(out var list)
+                .GetResult();
+
+            Assert.AreEqual(res.Result, ParserResult.State.Error);
+            Assert.NotNull(list);
+            Assert.IsTrue(list.Count == 0);
+        }
+
+        [TestCase("")]
+        [TestCase("-f")]
+        public void Required_argument_should_return_error_if_missing(string cmd)
+        {
+            var res = CreateParser(cmd)
+                .Option('f', out bool _)
+                .Argument(out int _, required: true)
+                .GetResult();
+
+            Assert.AreEqual(res.Result, ParserResult.State.Error);
+        }
+
+        [TestCase("1 2")]
+        [TestCase("1 2 3")]
+        public void Not_parsed_token_should_return_error(string cmd)
+        {
+            var res = CreateParser(cmd)
+                .Argument(out int _)
+                .GetResult();
+
+            Assert.AreEqual(res.Result, ParserResult.State.Error);
         }
     }
 }
