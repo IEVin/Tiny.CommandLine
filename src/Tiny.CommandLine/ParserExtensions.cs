@@ -12,11 +12,11 @@ namespace Tiny.CommandLine
         public static void Run(this CommandLineParser parser)
         {
             var result = parser.GetResult();
-            if (!result)
-            {
-                var exitCode = result == ParserResult.State.Error ? Constants.ErrorCode : 0;
-                ExitAction(exitCode);
-            }
+            if (result)
+                return;
+
+            var exitCode = result == ParserResult.State.Error ? Constants.ErrorCode : 0;
+            ExitAction(exitCode);
         }
 
         public static CommandLineParser Option<T>(this CommandLineParser parser, char alias, out T value, string helpText = null,
