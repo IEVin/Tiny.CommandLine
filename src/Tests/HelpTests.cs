@@ -1,4 +1,3 @@
-using System;
 using NUnit.Framework;
 using static Tiny.CommandLine.Tests.Helper;
 
@@ -64,7 +63,7 @@ namespace Tiny.CommandLine.Tests
                 .Command("cmd", "command 1", p =>
                 {
                     var res2 = p
-                        .Command("cmd2", "command 2", p2 => Assert.Fail())
+                        .Command("cmd2", "command 2", _ => Assert.Fail())
                         .Option('f', out bool _, "force")
                         .GetResult();
 
