@@ -6,12 +6,6 @@ namespace Tiny.CommandLine
 {
     public static class ParserExtensions
     {
-        public static CommandLineParser Variable<T>(this CommandLineParser parser, out T variable, T defaultValue = default)
-        {
-            variable = defaultValue;
-            return parser;
-        }
-
         public static void Run(this CommandLineParser parser)
         {
             var result = parser.GetResult();

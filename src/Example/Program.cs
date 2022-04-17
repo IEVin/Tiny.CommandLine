@@ -4,6 +4,7 @@ using System.IO;
 using Tiny.CommandLine;
 using Tiny.CommandLine.Example;
 
+var prm = new ExampleArguments();
 
 new CommandLineParser(args, "example", "This example is some variation of 'echo'")
     // Firstly should be declared global options. This options must not be repeated in sub-commands
@@ -24,9 +25,6 @@ new CommandLineParser(args, "example", "This example is some variation of 'echo'
         // In ideal sub-commands command should be declared in separate class in one line
         .Command("test", TestCommand.HelpText, TestCommand.Declare)
     )
-
-    // Params structure can be created in all places
-    .Variable(out var prm, new ExampleArguments())
 
     // Further should be declared command specific options
     .Option('f', out bool force, "Override output file")
