@@ -47,7 +47,7 @@ namespace Tiny.CommandLine
             builder(this);
 
             _state = _state == State.Active ? State.Interrupted : _state;
-            _result = _result == ParserResult.State.Success ? ParserResult.State.Handled : _result;
+            _result = _result != ParserResult.State.Error ? ParserResult.State.Handled : _result;
 
             return this;
         }

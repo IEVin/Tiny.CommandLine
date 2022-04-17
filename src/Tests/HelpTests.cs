@@ -57,6 +57,25 @@ namespace Tiny.CommandLine.Tests
             Assert.AreEqual(ex.Code, 0);
         }
 
+        [TestCase("cmd -h")]
+        public void Help_should_be_invoked_only_for_actual_command(string cmd)
+        {
+            var res = CreateParser(cmd)
+                .Command("cmd", "command 1", p =>
+                {
+                    var res2 = p
+                        .Command("cmd2", "command 2", p2 => Assert.Fail())
+                        .Option('f', out bool _, "force")
+                        .GetResult();
+
+                    CheckHelpInvoked(res2);
+                })
+                .Option('v', "value", out int _, required: true)
+                .GetResult();
+
+            Assert.AreEqual(res.Result, ParserResult.State.Handled);
+        }
+
         public static void CheckHelpInvoked(ParserResult result) => Assert.AreEqual(result.Result, ParserResult.State.HelpRequired);
     }
 }

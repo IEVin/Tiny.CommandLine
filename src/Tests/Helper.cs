@@ -12,7 +12,7 @@ namespace Tiny.CommandLine.Tests
         public static CommandLineParser CreateParser(string cmd)
         {
             var args = SplitArguments(cmd);
-            return new CommandLineParser(args, "test");
+            return new CommandLineParser(args, "test", "test");
         }
 
         public static void Run(string cmd, Action<CommandLineParser> configure)
