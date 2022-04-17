@@ -74,9 +74,7 @@ namespace Tiny.CommandLine.Implementation
             // others
             if (typeof(T) == typeof(DateTime) || typeof(T) == typeof(DateTime?)) return Parse<DateTime, ParserDateTime>(str, out value);
 
-            ThrowNotSupportedType();
-            value = default;
-            return false;
+            return ThrowNotSupportedType(out value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -90,6 +88,6 @@ namespace Tiny.CommandLine.Implementation
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        static void ThrowNotSupportedType() => throw new NotSupportedException($"The '{typeof(T).Name}' is not supported");
+        static bool ThrowNotSupportedType(out T value) => throw new NotSupportedException($"The '{typeof(T).Name}' is not supported");
     }
 }
