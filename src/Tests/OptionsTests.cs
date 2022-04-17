@@ -186,6 +186,20 @@ namespace Tiny.CommandLine.Tests
             Assert.AreEqual(res.Result, ParserResult.State.Error);
         }
 
+        [TestCase("")]
+        [TestCase("-v aaa")]
+        [TestCase("-v 1 sss")]
+        [TestCase("bbb")]
+        public void Run_should_exit_on_error(string cmd)
+        {
+            var parser = CreateParser(cmd)
+                .Option('v', out int _, required: true);
+
+            var ex = Assert.Catch<ExitException>(() => parser.Run());
+            Assert.NotNull(ex);
+            Assert.AreNotEqual(ex.Code, 0);
+        }
+
         static T ParseOption<T>(string cmd)
         {
             T result = default;

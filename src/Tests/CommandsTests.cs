@@ -115,5 +115,16 @@ namespace Tiny.CommandLine.Tests
 
             Assert.AreEqual(res.Result, ParserResult.State.Error);
         }
+
+        [TestCase("cmd")]
+        public void Run_should_exit_when_sub_command_invoked(string cmd)
+        {
+            var parser = CreateParser(cmd)
+                .Command("cmd", null, p => p.GetResult());
+
+            var ex = Assert.Catch<ExitException>(() => parser.Run());
+            Assert.NotNull(ex);
+            Assert.AreEqual(ex.Code, 0);
+        }
     }
 }

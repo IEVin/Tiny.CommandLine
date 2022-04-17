@@ -1,3 +1,4 @@
+using System;
 using NUnit.Framework;
 using static Tiny.CommandLine.Tests.Helper;
 
@@ -43,6 +44,17 @@ namespace Tiny.CommandLine.Tests
                 .GetResult();
 
             CheckHelpInvoked(res);
+        }
+
+        [TestCase("--help")]
+        public void Run_should_exit_when_help_require(string cmd)
+        {
+            var parser = CreateParser(cmd)
+                .Option('v', out int _);
+
+            var ex = Assert.Catch<ExitException>(() => parser.Run());
+            Assert.NotNull(ex);
+            Assert.AreEqual(ex.Code, 0);
         }
 
         public static void CheckHelpInvoked(ParserResult result) => Assert.AreEqual(result.Result, ParserResult.State.HelpRequired);
