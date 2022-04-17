@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 using System.Text;
 using NUnit.Framework;
 
@@ -20,6 +22,21 @@ namespace Tiny.CommandLine.Tests
 
             var result = parser.GetResult();
             Assert.IsTrue(result);
+        }
+
+        public static void OverrideOutput()
+        {
+            Console.SetError(TextWriter.Null);
+            Console.SetOut(TextWriter.Null);
+        }
+
+        public static void OverrideExit()
+        {
+            Action<int> onExit = x => throw new ExitException(x);
+
+            var exitAction = typeof(ParserExtensions).GetField("ExitAction", BindingFlags.Static | BindingFlags.NonPublic);
+            Assert.NotNull(exitAction);
+            exitAction.SetValue(null, onExit);
         }
 
         static string[] SplitArguments(string commandline)
@@ -86,5 +103,12 @@ namespace Tiny.CommandLine.Tests
 
             return list.ToArray();
         }
+    }
+
+    class ExitException : Exception
+    {
+        public int Code { get; private set; }
+
+        public ExitException(int code) => Code = code;
     }
 }

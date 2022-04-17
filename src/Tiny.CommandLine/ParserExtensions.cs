@@ -6,13 +6,16 @@ namespace Tiny.CommandLine
 {
     public static class ParserExtensions
     {
+        // This action is used to override it only in tests
+        static Action<int> ExitAction = Environment.Exit;
+
         public static void Run(this CommandLineParser parser)
         {
             var result = parser.GetResult();
             if (!result)
             {
                 var exitCode = result == ParserResult.State.Error ? Constants.ErrorCode : 0;
-                Environment.Exit(exitCode);
+                ExitAction(exitCode);
             }
         }
 

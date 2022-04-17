@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.IO;
 using NUnit.Framework;
 using static Tiny.CommandLine.Tests.Helper;
 
@@ -12,8 +10,8 @@ namespace Tiny.CommandLine.Tests
         [OneTimeSetUp]
         protected void SetUp()
         {
-            Console.SetError(TextWriter.Null);
-            Console.SetOut(TextWriter.Null);
+            OverrideOutput();
+            OverrideExit();
         }
 
         [TestCase("-v=val")]
