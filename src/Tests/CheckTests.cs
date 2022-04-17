@@ -83,5 +83,18 @@ namespace Tiny.CommandLine.Tests
             Assert.AreEqual(res.Result, ParserResult.State.Error);
             Assert.IsFalse(check);
         }
+
+        [TestCase("--help")]
+        public void Check_should_be_skipped_when_help_required(string cmd)
+        {
+            bool check = false;
+
+            var res = CreateParser(cmd)
+                .Check(() => check = true, "")
+                .GetResult();
+
+            Assert.AreEqual(res.Result, ParserResult.State.HelpRequired);
+            Assert.IsFalse(check);
+        }
     }
 }

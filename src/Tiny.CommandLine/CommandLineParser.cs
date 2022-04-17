@@ -55,7 +55,7 @@ namespace Tiny.CommandLine
         public CommandLineParser Option<T>(char alias, string name, out T value, string helpText = null,
             Func<T> valueDefault = null, bool required = false, string valueName = null, bool hidden = false)
         {
-            if (!TryCollectHelp<T>(alias, name, helpText, required, valueName, hidden, false))
+            if (!CollectHelpAndCheckState<T>(alias, name, helpText, required, valueName, hidden, false, false))
             {
                 value = default;
                 return this;
@@ -68,7 +68,7 @@ namespace Tiny.CommandLine
         public CommandLineParser OptionList<T>(char alias, string name, out IReadOnlyList<T> value, string helpText = null,
             Func<IReadOnlyList<T>> valueDefault = null, bool required = false, string valueName = null, bool hidden = false)
         {
-            if (!TryCollectHelp<T>(alias, name, helpText, required, valueName, hidden, true))
+            if (!CollectHelpAndCheckState<T>(alias, name, helpText, required, valueName, hidden, true, false))
             {
                 value = Array.Empty<T>();
                 return this;
@@ -81,13 +81,11 @@ namespace Tiny.CommandLine
         public CommandLineParser Argument<T>(out T value, string helpText = null,
             Func<T> valueDefault = null, bool required = false, string valueName = null, bool hidden = false)
         {
-            if (!TryCollectHelp<T>(Constants.NoAlias, Constants.NoName, helpText, required, valueName, hidden, false))
+            if (!CollectHelpAndCheckState<T>(Constants.NoAlias, Constants.NoName, helpText, required, valueName, hidden, false, true))
             {
                 value = default;
                 return this;
             }
-
-            CheckHelp();
 
             value = _parser.Argument(valueDefault, required, valueName);
             return this;
@@ -96,13 +94,11 @@ namespace Tiny.CommandLine
         public CommandLineParser ArgumentList<T>(out IReadOnlyList<T> value, string helpText = null,
             Func<IReadOnlyList<T>> valueDefault = null, bool required = false, string valueName = null, bool hidden = false)
         {
-            if (!TryCollectHelp<T>(Constants.NoAlias, Constants.NoName, helpText, required, valueName, hidden, true))
+            if (!CollectHelpAndCheckState<T>(Constants.NoAlias, Constants.NoName, helpText, required, valueName, hidden, true, true))
             {
                 value = Array.Empty<T>();
                 return this;
             }
-
-            CheckHelp();
 
             value = _parser.ArgumentList(valueDefault, required, valueName);
             return this;
@@ -112,6 +108,9 @@ namespace Tiny.CommandLine
         public CommandLineParser Check(Func<bool> predicate, string message)
         {
             if (_state != State.Active || _parser.HasError)
+                return this;
+
+            if (CheckHelp())
                 return this;
 
             if (!predicate())
@@ -142,8 +141,7 @@ namespace Tiny.CommandLine
         {
             _state = State.Finished;
 
-            CheckHelp();
-            if (_result == ParserResult.State.HelpRequired)
+            if (CheckHelp())
             {
                 ShowHelp();
                 return;
@@ -160,7 +158,7 @@ namespace Tiny.CommandLine
             }
         }
 
-        bool TryCollectHelp<T>(char alias, string name, string helpText, bool required, string valueName, bool hidden, bool list)
+        bool CollectHelpAndCheckState<T>(char alias, string name, string helpText, bool required, string valueName, bool hidden, bool list, bool checkHelp)
         {
             if (_state != State.Active)
                 return false;
@@ -168,18 +166,23 @@ namespace Tiny.CommandLine
             if (!hidden)
                 _helpCollector.AddOption<T>(alias, name, helpText, valueName, required, list);
 
-            return !_parser.HasError;
+            if (_parser.HasError)
+                return false;
+
+            return !checkHelp || !CheckHelp();
         }
 
-        void CheckHelp()
+        bool CheckHelp()
         {
             if (_helpChecked)
-                return;
+                return _result == ParserResult.State.HelpRequired;
 
             _helpChecked = true;
 
             var isHelpRequired = _parser.Option<bool>('h', "help", null, false);
             _result = isHelpRequired ? ParserResult.State.HelpRequired : _result;
+
+            return isHelpRequired;
         }
 
         void ShowHelp()
