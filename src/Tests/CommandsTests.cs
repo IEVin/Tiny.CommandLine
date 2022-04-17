@@ -106,5 +106,16 @@ namespace Tiny.CommandLine.Tests
             Assert.IsTrue(cmdInvoked);
             Assert.IsFalse(outerFlag);
         }
+
+        [TestCase("cmd")]
+        public void Command_should_not_parsed_if_has_error(string cmd)
+        {
+            var res = CreateParser(cmd)
+                .Option('f', out bool _, required: true)
+                .Command("cmd", null, _ => Assert.Fail())
+                .GetResult();
+
+            Assert.AreEqual(res.Result, ParserResult.State.Error);
+        }
     }
 }
